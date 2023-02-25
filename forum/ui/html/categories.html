@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Categories</title>
+    <link href="../../ui/styles/style.css" rel="stylesheet" type="text/css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="main-container">
+        <header>
+            <div class="header_text">
+                <a href="/">
+                    FORUM
+                </a>
+            </div>
+
+            {{ if .ThatUser.Username }}
+            <div class="header_text1">
+                <a class="header_part" href="/post/create"><i class="ri-add-circle-line"></i></a>
+                <a class="header_part" href="/profile/{{.ThatUser.Username }}"><i class="ri-user-line"></i></a>
+                <a class="header_part" href="/auth/logout"><i class="ri-login-box-line"></i></a>
+            </div>
+
+            {{ else }}
+            <div class="header_text1">
+                <a class="header_part" href="/auth/signin"><i class="ri-login-box-line"></i></a>
+                <br>
+                <a class="header_part" href="/auth/signup"><i class="ri-user-add-line"></i></a>
+            </div>
+
+            {{ end }}
+        </header>
+
+        <div class="main-content">
+            <h2>Categories:</h2>
+            <div class="all-categories">
+                {{$all:=.Posts}}
+                {{range .Categories}}
+                <div class="category">
+                    <span class="tags">{{.}}</span>
+                    {{$category:=.}}
+                    {{range $all}}
+                    {{$ok:=false}}
+
+                    {{range .Category}}
+
+
+                    {{if eq . $category}}
+
+                    {{$ok = true}}
+
+                    {{end}}
+
+                    {{end}}
+
+                    {{if $ok}}
+
+                    <div class="filtered-post">
+                        <a class="post__title" href="/post/?id={{.Id}}">{{.Title}}</a>
+                        <br>
+                        <a href="/profile/{{.Creator}}">By {{.Creator}}</a>
+                    </div>
+                    {{end}}
+
+                    {{end}}
+                </div>
+                {{end}}
+            </div>
+
+        </div>
+        <footer>
+
+            <div class="footer_text">FORUM by <b><a href="https://01.alem.school/git/razullya">razullya</a></b>
+                and
+                <b><a href="https://01.alem.school/git/Adi1_Asqaru1y">Adi1_Asqaru1y </a></b>
+            </div>
+
+        </footer>
+
+</body>
+<script>
+    const postTitles = document.querySelectorAll('.post__title');
+
+    postTitles.forEach(postTitle => {
+        if (postTitle.innerText.length > 20) {
+            postTitle.innerText = postTitle.innerText.substring(0, 20) + "...";
+        }
+    });
+
+    const postTags = document.querySelectorAll('.tags');
+
+    postTags.forEach(postTag => {
+        if (postTag.innerText.length > 10) {
+            postTag.innerText = postTag.innerText.substring(0, 10) + "...";
+        }
+    });
+</script>
+
+</html>

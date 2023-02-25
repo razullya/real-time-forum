@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link href="../ui/styles/style.css" rel="stylesheet" type="text/css">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="main-container">
+        <header>
+            <div class="header_text">
+                <a href="/">
+                    FORUM
+                </a>
+            </div>
+
+            {{ if .ThatUser.Username }}
+            <div class="header_text1">
+                <a class="header_part" href="/post/create"><i class="ri-add-circle-line"></i></a>
+                <a class="header_part" href="/profile/{{.ThatUser.Username }}"><i class="ri-user-line"></i></a>
+                <a class="header_part" href="/auth/logout"><i class="ri-login-box-line"></i></a>
+            </div>
+
+            {{ else }}
+            <div class="header_text1">
+                <a class="header_part" href="/auth/signin"><i class="ri-login-box-line"></i></a>
+                <br>
+                <a class="header_part" href="/auth/signup"><i class="ri-user-add-line"></i></a>
+            </div>
+
+            {{ end }}
+        </header>
+
+        <div class="main-content">
+
+            <form class="filter">
+                <a href="/post/categories">All Categories</a>
+                <input type="submit" name="filter" id="btn" value="More Liked">
+                <input type="submit" name="filter" id="btn" value="Newest">
+            </form>
+
+            <div class="posts">
+
+                {{range .Posts}}
+                <div class="post">
+                    <a class="post__title" href="/post/?id={{.Id}}">{{.Title}}</a>
+                    <a class="post__description">{{.Description}}</h3>
+                        <a href="/profile/{{.Creator}}">by {{.Creator}}</a>
+                        <ul>
+                            {{range .Category}}
+                            <li class="tags">{{.}}</li>
+                            {{end}}
+                        </ul>
+                </div>
+                {{end}}
+
+            </div>
+
+
+        </div>
+        <footer>
+
+            <div class="footer_text">FORUM by <b><a href="https://01.alem.school/git/razullya">razullya</a></b>
+                and
+                <b><a href="https://01.alem.school/git/Adi1_Asqaru1y">Adi1_Asqaru1y </a></b>
+            </div>
+
+        </footer>
+
+</body>
+<script>
+    const postTitles = document.querySelectorAll('.post__title');
+
+    postTitles.forEach(postTitle => {
+        if (postTitle.innerText.length > 80) {
+            postTitle.innerText = postTitle.innerText.substring(0, 40) + "...";
+        }
+    });
+
+
+    const postDescriptions = document.querySelectorAll('.post__description');
+
+    postDescriptions.forEach(postDescription => {
+        if (postDescription.innerText.length > 80) {
+            postDescription.innerText = postDescription.innerText.substring(0, 80) + "...";
+        }
+    });
+
+    const postTags = document.querySelectorAll('.tags');
+
+    postTags.forEach(postTag => {
+        if (postTag.innerText.length > 10) {
+            postTag.innerText = postTag.innerText.substring(0, 10) + "...";
+        }
+    });
+</script>
+
+</html>

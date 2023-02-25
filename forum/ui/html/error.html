@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{{.Status}}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet">
+
+    <link type="text/css" rel="stylesheet" href="../../ui/styles/style.css" />
+
+</head>
+
+<body>
+
+    <div id="error">
+        <div class="error">
+            <div class="error-status">
+                <h1>{{.Status}}</h1>
+            </div>
+            <h2>{{.Message}}</h2>
+            <br>
+            <a href="{{.LinkBack}}">Go Back</a>
+        </div>
+    </div>
+
+</body>
+
+</html>
