@@ -1,29 +1,56 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Working chat apps</title>
-        <style>
-            .msg{
-                background-color: aqua;
-                padding: 10px;
-                margin-bottom: 10px;
-            }
-            .self{
-                background-color: rgb(0, 153, 255);
-            }
+<html lang="en">
 
-        </style>
-    </head>
-    <body>
-        <div id="msgcontainer" style="height:500px;background:#eee;overflow-y: auto;"></div>
-        <div style="overflow: hidden;">
-            <input id="ipt" style="width: 100%; padding: 10px;" onkeypress="mysocket.keypress(event)" type="text"/>
-        </div>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
 
-        <script src="mysocket.js"></script>
-        <script>
-            var mysocket = new MySocket()
-            mysocket.connectSocket();
-        </script>
-    </body>
+<body>
+    <script>
+        let socket = new WebSocket("ws://localhost:8080/ws")
+        console.log('attempt')
+
+        socket.onopen = () => {
+            console.log("open")
+                // socket.send('{"action":"signup", "email":"email@mail.ru","username": "razullya", "password":"1234"}')
+                // socket.send('{"action":"signin", "username": "razullya", "password":"1234"}')
+            socket.send('{"action":"logout"}')
+
+        }
+        socket.onclose = (event) => {
+            console.log("close")
+            socket.send("hello from js")
+
+
+        }
+        socket.onerror = (error) => {
+                console.log("err")
+                socket.send("hello from js")
+
+            }
+            // const socket = new WebSocket('ws://localhost:8000/ws');
+
+        // // Отправка сообщения авторизации
+        // socket.addEventListener('open', () => {
+        //     const message = {
+        //         token: 'your_auth_token_here'
+        //     };
+        //     socket.send(JSON.stringify(message));
+        // });
+
+        // // Обработка ответа сервера
+        // socket.addEventListener('message', event => {
+        //     const data = JSON.parse(event.data);
+        //     if (data.status === 'authorized') {
+        //         console.log('Авторизация успешна!');
+        //     } else {
+        //         console.log('Ошибка авторизации:', data.error);
+        //     }
+        // });
+    </script>
+</body>
+
 </html>

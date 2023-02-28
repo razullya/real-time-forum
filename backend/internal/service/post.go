@@ -9,11 +9,11 @@ import (
 
 type Post interface {
 	//	CRUD
-	CreatePost(post models.Post, user models.User) error
+	CreatePost(post models.Post, username string) error
 	UpdatePost(postId int, post models.Post, user models.User) error
 	DeletePost(postId int, user models.User) error
 	//	GET
-	GetAllPosts(filter string) ([]models.Post, error)
+	GetAllPosts() ([]models.Post, error)
 	GetPostById(id int) (models.Post, error)
 	GetPostsByUsername(username string) ([]models.Post, error)
 	GetAllCategories() ([]string, error)
@@ -30,10 +30,10 @@ func newPostService(storage storage.Post) *PostService {
 	}
 }
 
-func (p *PostService) CreatePost(post models.Post, user models.User) error {
+func (p *PostService) CreatePost(post models.Post, username string) error {
 	post.Category = strings.Fields(post.Category[0])
 
-	if err := p.storage.CreatePost(user.Username, post); err != nil {
+	if err := p.storage.CreatePost(username, post); err != nil {
 		return err
 	}
 	return nil
@@ -72,8 +72,8 @@ func (p *PostService) UpdatePost(postId int, post models.Post, user models.User)
 	}
 	return nil
 }
-func (p *PostService) GetAllPosts(filter string) ([]models.Post, error) {
-	return p.storage.GetAllPosts(filter)
+func (p *PostService) GetAllPosts() ([]models.Post, error) {
+	return p.storage.GetAllPosts()
 }
 
 func (p *PostService) GetPostsByUsername(username string) ([]models.Post, error) {
@@ -84,8 +84,8 @@ func (p *PostService) GetPostsByUsername(username string) ([]models.Post, error)
 
 	return posts, nil
 }
-func (p *PostService) UpdateCountsReactions(object string,likes int, dislikes int, postId int) error {
-	if err := p.storage.UpdateCountsReactions(object ,likes, dislikes, postId); err != nil {
+func (p *PostService) UpdateCountsReactions(object string, likes int, dislikes int, postId int) error {
+	if err := p.storage.UpdateCountsReactions(object, likes, dislikes, postId); err != nil {
 		return err
 	}
 	return nil

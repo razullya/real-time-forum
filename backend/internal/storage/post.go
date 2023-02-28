@@ -15,7 +15,7 @@ type Post interface {
 	//	GET
 	GetPostsByUsername(username string) ([]models.Post, error)
 	GetPostById(id int) (models.Post, error)
-	GetAllPosts(filter string) ([]models.Post, error)
+	GetAllPosts() ([]models.Post, error)
 	GetAllCategories() ([]string, error)
 	GetCategoriesById(id int) ([]string, error)
 	//	AUTH
@@ -131,17 +131,11 @@ func (p *PostStorage) GetCategoriesById(id int) ([]string, error) {
 	return cats, nil
 }
 
-func (p *PostStorage) GetAllPosts(filter string) ([]models.Post, error) {
+func (p *PostStorage) GetAllPosts() ([]models.Post, error) {
 	posts := []models.Post{}
-	query := ""
 
-	if filter == "More Liked" {
-		query = `SELECT * FROM post ORDER BY likes DESC;`
-	} else if filter == "Newest" {
-		query = `SELECT * FROM post ORDER BY created_at DESC;`
-	} else {
-		query = `SELECT * FROM post;`
-	}
+	query := `SELECT * FROM post;`
+
 	row, err := p.db.Query(query)
 	if err != nil {
 		return nil, fmt.Errorf("storage: get all posts: %w", err)

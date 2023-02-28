@@ -7,7 +7,7 @@ import (
 )
 
 type Comment interface {
-	CreateComment(id int, user models.User, comment string) error
+	CreateComment(id int, username string, comment string) error
 	GetCommentsByIdPost(id int) ([]models.Comment, error)
 }
 
@@ -20,9 +20,9 @@ func newCommentStorage(db *sql.DB) *CommentStorage {
 		db: db,
 	}
 }
-func (c *CommentStorage) CreateComment(id int, user models.User, comment string) error {
+func (c *CommentStorage) CreateComment(id int, username string, comment string) error {
 	query := `INSERT INTO comment(id_post, creator, comment) VALUES($1, $2, $3);`
-	if _, err := c.db.Exec(query, id, user.Username, comment); err != nil {
+	if _, err := c.db.Exec(query, id, username, comment); err != nil {
 		return fmt.Errorf("storage: add comment: %w", err)
 	}
 	return nil

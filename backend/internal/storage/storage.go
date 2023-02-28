@@ -14,10 +14,10 @@ type Storage struct {
 
 func NewStorage(db *sql.DB) *Storage {
 	return &Storage{
-		Auth:     newAuthStorage(db),
-		Post:     newPostStorage(db),
+		Auth: newAuthStorage(db),
+		Post: newPostStorage(db),
 		User:     newUserStorage(db),
-		Comment:  newCommentStorage(db),
+		Comment: newCommentStorage(db),
 		Reaction: newReactionStorage(db),
 	}
 }

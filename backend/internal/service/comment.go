@@ -6,7 +6,7 @@ import (
 )
 
 type Comment interface {
-	CreateComment(id int, user models.User, comment string) error
+	CreateComment(id int, username string, comment string) error
 	GetCommentsByIdPost(id int) ([]models.Comment, error)
 }
 type CommentService struct {
@@ -18,8 +18,8 @@ func newCommentService(storage storage.Comment) *CommentService {
 		storage: storage,
 	}
 }
-func (c *CommentService) CreateComment(id int, user models.User, comment string) error {
-	if err := c.storage.CreateComment(id, user, comment); err != nil {
+func (c *CommentService) CreateComment(id int, username string, comment string) error {
+	if err := c.storage.CreateComment(id, username, comment); err != nil {
 		return err
 	}
 	return nil

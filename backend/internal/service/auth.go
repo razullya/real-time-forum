@@ -121,9 +121,6 @@ func validUser(user models.User) error {
 	if len(user.Username) <= 4 || len(user.Username) >= 36 {
 		return ErrInvalidUserName
 	}
-
-	if user.Password != user.VerifyPassword {
-		return ErrPasswordDontMatch
-	}
+	
 	return nil
 }
