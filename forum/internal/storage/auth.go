@@ -14,6 +14,7 @@ type Auth interface {
 	SaveSessionToken(login, token string, expiresAt time.Time) error
 	GetUserByToken(token string) (models.User, error)
 	DeleteSessionToken(token string) error
+	CheckToken(token string) error
 }
 
 type AuthStorage struct {
@@ -80,6 +81,14 @@ func (s *AuthStorage) DeleteSessionToken(token string) error {
 	_, err := s.db.Exec(query, token)
 	if err != nil {
 		return fmt.Errorf("storage: delete session token: %w", err)
+	}
+	return nil
+}
+func (s *AuthStorage) CheckToken(token string) error {
+	query := `SELECT username FROM user WHERE session_token = $1;`
+	_, err := s.db.Exec(query, token)
+	if err != nil {
+		return fmt.Errorf("storage: no token: %w", err)
 	}
 	return nil
 }

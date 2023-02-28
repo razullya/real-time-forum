@@ -27,6 +27,7 @@ type Auth interface {
 	GenerateSessionToken(login, password string) (string, time.Time, error)
 	ParseSessionToken(token string) (models.User, error)
 	DeleteSessionToken(token string) error
+	CheckToken(token string) error
 }
 
 type AuthService struct {
@@ -121,6 +122,9 @@ func validUser(user models.User) error {
 	if len(user.Username) <= 4 || len(user.Username) >= 36 {
 		return ErrInvalidUserName
 	}
-	
+
 	return nil
+}
+func (s *AuthService) CheckToken(token string) error {
+	return s.storage.CheckToken(token)
 }

@@ -1,26 +1,5 @@
 package delivery
 
-/*
-post
--all
--one
--create
--like
--dislike
-
-auth
--signin
--signup
--logout
-
-comment
--create
--like
--dislike
-
-user
--profile
-*/
 func (h *Handler) likePost(data map[string]interface{}) string {
 	postId, ok := data["post_id"].(int)
 	if !ok {

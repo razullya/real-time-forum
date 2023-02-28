@@ -4,14 +4,6 @@ import (
 	"forum/models"
 )
 
-/*
-post
--all
--one
--create
--like
--dislike
-*/
 func (h *Handler) createPost(data map[string]interface{}) string {
 	title, ok := data["title"].(string)
 	if !ok {
