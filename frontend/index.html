@@ -6,51 +6,28 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <!-- <script type="text/javascript" src="index.js"></script> -->
 </head>
 
 <body>
-    <script>
-        let socket = new WebSocket("ws://localhost:8080/ws")
-        console.log('attempt')
-
-        socket.onopen = () => {
-            console.log("open")
-                // socket.send('{"action":"signup", "email":"email@mail.ru","username": "razullya", "password":"1234"}')
-                // socket.send('{"action":"signin", "username": "razullya", "password":"1234"}')
-            socket.send('{"action":"logout"}')
-
-        }
-        socket.onclose = (event) => {
-            console.log("close")
-            socket.send("hello from js")
+    <div class="root">
+        <nav id="main-nav" class="sidebar">
+            
 
 
-        }
-        socket.onerror = (error) => {
-                console.log("err")
-                socket.send("hello from js")
+        </nav>
+        <div id="main-page">
 
-            }
-            // const socket = new WebSocket('ws://localhost:8000/ws');
+        </div>
+    </div>
 
-        // // Отправка сообщения авторизации
-        // socket.addEventListener('open', () => {
-        //     const message = {
-        //         token: 'your_auth_token_here'
-        //     };
-        //     socket.send(JSON.stringify(message));
-        // });
+    <script src="post.js"></script>
+    <script src="auth.js"></script>
+    <script src="js/router.js"></script>
+    <script src="index.js"></script>
 
-        // // Обработка ответа сервера
-        // socket.addEventListener('message', event => {
-        //     const data = JSON.parse(event.data);
-        //     if (data.status === 'authorized') {
-        //         console.log('Авторизация успешна!');
-        //     } else {
-        //         console.log('Ошибка авторизации:', data.error);
-        //     }
-        // });
-    </script>
+
+
 </body>
 
 </html>

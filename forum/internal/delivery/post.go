@@ -17,17 +17,20 @@ func (h *Handler) createPost(data map[string]interface{}) string {
 	if !ok {
 		return h.onError("no password")
 	}
-	username, ok := data["username"].(string)
+	token, ok := data["token"].(string)
 	if !ok {
-		return h.onError("no username")
+		return h.onError("no token")
 	}
 	post := models.Post{
 		Title:       title,
 		Description: description,
 		Category:    []string{category},
 	}
-
-	if err := h.service.Post.CreatePost(post, username); err != nil {
+	user, err := h.service.Auth.GetUserByToken(token)
+	if err != nil {
+		return h.onError(err.Error())
+	}
+	if err := h.service.Post.CreatePost(post, user.Username); err != nil {
 		return h.onError(err.Error())
 	}
 	return statusOK
@@ -81,5 +84,6 @@ func (h *Handler) getAllPosts(data map[string]interface{}) string {
 	if err != nil {
 		return h.onError(err.Error())
 	}
+
 	return string(resp)
 }

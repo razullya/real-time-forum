@@ -7,7 +7,6 @@ import (
 	"forum/internal/storage"
 	"forum/models"
 	"regexp"
-	"time"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -24,10 +23,11 @@ var (
 
 type Auth interface {
 	CreateUser(user models.User) error
-	GenerateSessionToken(login, password string) (string, time.Time, error)
+	GenerateSessionToken(login, password string) (string, error)
 	ParseSessionToken(token string) (models.User, error)
 	DeleteSessionToken(token string) error
 	CheckToken(token string) error
+	GetUserByToken(token string) (models.User, error)
 }
 
 type AuthService struct {
@@ -59,23 +59,23 @@ func (s *AuthService) CreateUser(user models.User) error {
 	return s.storage.CreateUser(user)
 }
 
-func (s *AuthService) GenerateSessionToken(username, password string) (string, time.Time, error) {
+func (s *AuthService) GenerateSessionToken(username, password string) (string, error) {
 	user, err := s.storage.GetUserByLogin(username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return "", time.Time{}, fmt.Errorf("service: generate session token: %w", ErrUserNotFound)
+			return "", fmt.Errorf("service: generate session token: %w", ErrUserNotFound)
 		}
-		return "", time.Time{}, fmt.Errorf("service: generate session token: %w", err)
+		return "", fmt.Errorf("service: generate session token: %w", err)
 	}
 	if err := compareHashAndPassword(user.Password, password); err != nil {
-		return "", time.Time{}, fmt.Errorf("service: generate session token: %w", err)
+		return "", fmt.Errorf("service: generate session token: %w", err)
 	}
 	token := uuid.NewString()
-	expiresAt := time.Now().Add(time.Hour * 12)
-	if err := s.storage.SaveSessionToken(user.Username, token, expiresAt); err != nil {
-		return "", time.Time{}, fmt.Errorf("service: generate session token: %w", err)
+
+	if err := s.storage.SaveSessionToken(user.Username, token); err != nil {
+		return "", fmt.Errorf("service: generate session token: %w", err)
 	}
-	return token, expiresAt, nil
+	return token, nil
 }
 
 func (s *AuthService) ParseSessionToken(token string) (models.User, error) {
@@ -127,4 +127,8 @@ func validUser(user models.User) error {
 }
 func (s *AuthService) CheckToken(token string) error {
 	return s.storage.CheckToken(token)
+}
+
+func (s *AuthService) GetUserByToken(token string) (models.User, error) {
+	return s.storage.GetUserByToken(token)
 }

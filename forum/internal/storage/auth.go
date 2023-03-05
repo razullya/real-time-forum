@@ -4,14 +4,13 @@ import (
 	"database/sql"
 	"fmt"
 	"forum/models"
-	"time"
 )
 
 type Auth interface {
 	CreateUser(user models.User) error
 	GetUserByLogin(login string) (models.User, error)
 	GetUserByEmail(email string) (models.User, error)
-	SaveSessionToken(login, token string, expiresAt time.Time) error
+	SaveSessionToken(login, token string) error
 	GetUserByToken(token string) (models.User, error)
 	DeleteSessionToken(token string) error
 	CheckToken(token string) error
@@ -56,9 +55,9 @@ func (s *AuthStorage) GetUserByEmail(email string) (models.User, error) {
 	}
 	return user, nil
 }
-func (s *AuthStorage) SaveSessionToken(username, token string, expiresAt time.Time) error {
-	query := `UPDATE user SET session_token = $1, expiresAt = $2 WHERE username = $3;`
-	_, err := s.db.Exec(query, token, expiresAt, username)
+func (s *AuthStorage) SaveSessionToken(username, token string) error {
+	query := `UPDATE user SET session_token = $1 WHERE username = $3;`
+	_, err := s.db.Exec(query, token, username)
 	if err != nil {
 		return fmt.Errorf("storage: save session token: %w", err)
 	}
@@ -66,10 +65,10 @@ func (s *AuthStorage) SaveSessionToken(username, token string, expiresAt time.Ti
 }
 
 func (s *AuthStorage) GetUserByToken(token string) (models.User, error) {
-	query := `SELECT id, email, username, hashPassword, expiresAt FROM user WHERE session_token=$1;`
+	query := `SELECT id, email, username, hashPassword FROM user WHERE session_token=$1;`
 	row := s.db.QueryRow(query, token)
 	var user models.User
-	err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Password, &user.ExpiresAt)
+	err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
 	if err != nil {
 		return models.User{}, fmt.Errorf("storage: get user by token: %w", err)
 	}
@@ -77,7 +76,7 @@ func (s *AuthStorage) GetUserByToken(token string) (models.User, error) {
 }
 
 func (s *AuthStorage) DeleteSessionToken(token string) error {
-	query := `UPDATE user SET session_token = NULL, expiresAt = NULL WHERE session_token = $1;`
+	query := `UPDATE user SET session_token = NULL WHERE session_token = $1;`
 	_, err := s.db.Exec(query, token)
 	if err != nil {
 		return fmt.Errorf("storage: delete session token: %w", err)

@@ -12,6 +12,11 @@ import (
 
 var statusOK = `{"status":"OK"}`
 
+var upgrader = &websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
+
 type Handler struct {
 	Mux     *http.ServeMux
 	service *service.Service
@@ -47,12 +52,24 @@ user
 -profile
 */
 func (h *Handler) InitRoutes() {
-	h.Mux.HandleFunc("/ws", h.wsEndpoint)
-}
+	h.Mux.HandleFunc("/signin", h.wsEndpoint)
+	h.Mux.HandleFunc("/signup", h.wsEndpoint)
 
-var upgrader = &websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+	h.Mux.HandleFunc("/logout", h.wsEndpoint)
+
+	h.Mux.HandleFunc("/token", h.wsEndpoint)
+
+	h.Mux.HandleFunc("/post", h.wsEndpoint)
+	h.Mux.HandleFunc("/post/all", h.wsEndpoint)
+
+	h.Mux.HandleFunc("/post/like", h.wsEndpoint)
+	h.Mux.HandleFunc("/post/dislike", h.wsEndpoint)
+	h.Mux.HandleFunc("/post/create", h.wsEndpoint)
+
+	h.Mux.HandleFunc("/comment/create", h.wsEndpoint)
+	h.Mux.HandleFunc("/comment/like", h.wsEndpoint)
+	h.Mux.HandleFunc("/comment/dislike", h.wsEndpoint)
+	h.Mux.HandleFunc("/user", h.wsEndpoint)
 }
 
 func (h *Handler) wsEndpoint(w http.ResponseWriter, r *http.Request) {
@@ -62,23 +79,27 @@ func (h *Handler) wsEndpoint(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 	h.ws = ws
-	h.reader(ws)
+	fmt.Println(r.URL.Path)
+	h.reader(ws, r.URL.Path)
 }
-func (h *Handler) reader(conn *websocket.Conn) {
+func (h *Handler) reader(conn *websocket.Conn, path string) {
 	for {
 		_, m, err := conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
 		}
+		var resp string
 		var data map[string]interface{}
-		if err := json.Unmarshal(m, &data); err != nil {
-			// log.Println(err)
-			return
-		}
+		if len(m) == 0 {
+			resp = h.RouterWS(data, path)
+		} else {
+			if err := json.Unmarshal(m, &data); err != nil {
+				return
+			}
 
-		fmt.Println(data)
-		resp := h.RouterWS(data)
-		fmt.Println(resp)
+			resp = h.RouterWS(data, path)
+			fmt.Println(resp)
+		}
 
 		if err := h.ws.WriteMessage(websocket.TextMessage, []byte(resp)); err != nil {
 			log.Println(err)
@@ -86,38 +107,35 @@ func (h *Handler) reader(conn *websocket.Conn) {
 		}
 	}
 }
-func (h *Handler) RouterWS(data map[string]interface{}) string {
-	action, ok := data["action"].(string)
-	if !ok {
-		return h.onError("no action")
-	}
-	fmt.Println(action)
-	switch action {
-	case "signin":
+func (h *Handler) RouterWS(data map[string]interface{}, path string) string {
+
+	fmt.Println(path)
+	switch path {
+	case "/signin":
 		return h.signIn(data)
-	case "signup":
+	case "/signup":
 		return h.signUp(data)
-	case "logout":
+	case "/logout":
 		return h.logOut(data)
-	case "token":
+	case "/token":
 		return h.checkToken(data)
-	case "post":
+	case "/post":
 		return h.getPost(data)
-	case "post/create":
+	case "/post/create":
 		return h.createPost(data)
-	case "post/all":
+	case "/post/all":
 		return h.getAllPosts(data)
-	case "post/like":
+	case "/post/like":
 		return h.likePost(data)
-	case "post/dislike":
+	case "/post/dislike":
 		return h.dislikePost(data)
-	case "comment/create":
+	case "/comment/create":
 		return h.createComment(data)
-	case "comment/like":
+	case "/comment/like":
 		return h.likeComment(data)
-	case "comment/dislike":
+	case "/comment/dislike":
 		return h.dislikeComment(data)
-	case "user":
+	case "/user":
 		return h.getUser(data)
 	default:
 		return h.onError("bad action")

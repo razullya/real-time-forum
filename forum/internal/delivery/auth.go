@@ -17,7 +17,7 @@ func (h *Handler) signIn(data map[string]interface{}) string {
 		return h.onError("no one tokens")
 	}
 
-	sessionToken, expiresAt, err := h.service.Auth.GenerateSessionToken(username, password)
+	sessionToken, err := h.service.Auth.GenerateSessionToken(username, password)
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
 
@@ -26,7 +26,7 @@ func (h *Handler) signIn(data map[string]interface{}) string {
 		return h.onError(err.Error())
 	}
 
-	return fmt.Sprintf(`{"token: "%s", "expire":"%s"}"`, sessionToken, expiresAt.String())
+	return fmt.Sprintf(`{"token": "%s"}`, sessionToken)
 }
 
 func (h *Handler) signUp(data map[string]interface{}) string {
@@ -47,6 +47,7 @@ func (h *Handler) signUp(data map[string]interface{}) string {
 		Username: username,
 		Password: password,
 	}
+	fmt.Println(user)
 	if err := h.service.Auth.CreateUser(user); err != nil {
 		if errors.Is(err, service.ErrInvalidUserName) ||
 			errors.Is(err, service.ErrInvalidEmail) ||
@@ -58,6 +59,7 @@ func (h *Handler) signUp(data map[string]interface{}) string {
 
 		return h.onError(err.Error())
 	}
+	fmt.Println(user)
 	return statusOK
 }
 
@@ -78,6 +80,8 @@ func (h *Handler) checkToken(data map[string]interface{}) string {
 		return h.onError("no one tokens")
 	}
 	fmt.Println(token)
-	//TODO
+	if err := h.service.CheckToken(token); err != nil {
+		return h.onError("incorrect token")
+	}
 	return statusOK
 }

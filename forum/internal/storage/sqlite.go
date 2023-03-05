@@ -10,8 +10,7 @@ const userTable = `CREATE TABLE IF NOT EXISTS user (
 	email TEXT UNIQUE,
 	username TEXT UNIQUE,
 	hashPassword TEXT,
-	session_token TEXT DEFAULT NULL,
-	expiresAt DATETIME DEFAULT NULL
+	session_token TEXT DEFAULT NULL
 );`
 
 const postTable = `CREATE TABLE IF NOT EXISTS post (

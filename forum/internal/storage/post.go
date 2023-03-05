@@ -33,10 +33,10 @@ func newPostStorage(db *sql.DB) *PostStorage {
 }
 
 func (p *PostStorage) GetUserByToken(token string) (models.User, error) {
-	query := `SELECT id, email, username, hashPassword, expiresAt FROM user WHERE session_token=$1;`
+	query := `SELECT id, email, username, hashPassword FROM user WHERE session_token=$1;`
 	row := p.db.QueryRow(query, token)
 	var user models.User
-	err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Password, &user.ExpiresAt)
+	err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
 	if err != nil {
 		return models.User{}, fmt.Errorf("storage: get user by token: %w", err)
 	}
