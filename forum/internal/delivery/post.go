@@ -1,7 +1,9 @@
 package delivery
 
 import (
+	"fmt"
 	"forum/models"
+	"strconv"
 )
 
 func (h *Handler) createPost(data map[string]interface{}) string {
@@ -36,12 +38,16 @@ func (h *Handler) createPost(data map[string]interface{}) string {
 	return statusOK
 }
 func (h *Handler) getPost(data map[string]interface{}) string {
-
-	id, ok := data["id"].(int)
+	fmt.Println(data)
+	idIn, ok := data["id"].(string)
 	if !ok {
 		return h.onError("no id")
 	}
+	id, err := strconv.Atoi(idIn)
+	if err != nil {
+		return h.onError("incorrect id")
 
+	}
 	post, err := h.service.Post.GetPostById(id)
 	if err != nil {
 		return h.onError(err.Error())
@@ -75,11 +81,12 @@ func (h *Handler) getPost(data map[string]interface{}) string {
 	return string(resp)
 }
 func (h *Handler) getAllPosts(data map[string]interface{}) string {
+
 	posts, err := h.service.GetAllPosts()
 	if err != nil {
 		return h.onError(err.Error())
-
 	}
+
 	resp, err := h.structToJSON(posts)
 	if err != nil {
 		return h.onError(err.Error())

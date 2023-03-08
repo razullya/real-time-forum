@@ -90,16 +90,17 @@ func (h *Handler) reader(conn *websocket.Conn, path string) {
 		}
 		var resp string
 		var data map[string]interface{}
-		if len(m) == 0 {
-			resp = h.RouterWS(data, path)
-		} else {
-			if err := json.Unmarshal(m, &data); err != nil {
-				return
-			}
 
-			resp = h.RouterWS(data, path)
-			fmt.Println(resp)
+		//
+		if err := json.Unmarshal(m, &data); err != nil && len(data) != 0 {
+			fmt.Println(err)
+			return
 		}
+		// fmt.Println("данные получены")
+
+		resp = h.RouterWS(data, path)
+		// fmt.Println(resp)
+		// fmt.Println("прошли изменения")
 
 		if err := h.ws.WriteMessage(websocket.TextMessage, []byte(resp)); err != nil {
 			log.Println(err)
@@ -142,7 +143,7 @@ func (h *Handler) RouterWS(data map[string]interface{}, path string) string {
 	}
 }
 func (h *Handler) structToJSON(data interface{}) ([]byte, error) {
-	fmt.Println(data)
+
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
