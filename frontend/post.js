@@ -27,12 +27,7 @@ const onCreatePost = (event) => {
     })
 }
 
-
-
-
-
-
-function createPostOnPage(post) {
+function createPostOnMainPage(post) {
     const postCont = document.createElement('div');
     postCont.className = 'post'
 
@@ -56,6 +51,7 @@ function createPostOnPage(post) {
     const posts = document.getElementById('posts')
     posts.appendChild(postCont)
 }
+
 function getAllPosts() {
 
     socket.close();
@@ -72,7 +68,7 @@ function getAllPosts() {
             prepairPosts()
 
             data.forEach(element => {
-                createPostOnPage(element)
+                createPostOnMainPage(element)
             });
 
         });
@@ -91,4 +87,61 @@ function prepairPosts() {
         const posts = document.getElementById("posts")
         posts.innerHTML = ""
     }
+}
+const getPostById = (event) => {
+    event.preventDefault();
+    socket.close();
+
+    socket = new WebSocket("ws://localhost:8080/post");
+    socket.addEventListener('open', () => {
+
+        const urlParams = new URLSearchParams(event.target.search);
+        const id = urlParams.get('id');
+        console.log(id)
+        socket.send(JSON.stringify({
+            'id': id
+        }));
+
+        socket.addEventListener('message', async (event) => {
+            const data = JSON.parse(event.data);
+
+            event.target.href = "/post"
+            await route(event)
+
+            createPostOnPage(data)
+
+        });
+    });
+};
+function createPostOnPage(post) {
+    
+    const postCont = document.getElementById('post-info');
+   
+
+    const title = document.createElement('a')
+    title.className = 'post__title'
+
+    title.appendChild(document.createTextNode(post.title))
+
+    const description = document.createElement('div')
+    description.className = 'post__description'
+    description.appendChild(document.createTextNode(post.description))
+
+    const creator = document.createElement('a')
+    creator.className = 'post__title'
+    creator.href = 'profile?creator=' + post.creator
+    creator.setAttribute('onclick', 'getPostById(event)')
+    creator.appendChild(document.createTextNode(post.creator))
+
+    const category = document.createElement('div')
+    category.className = 'tags'
+    post.category.forEach(element => {
+        category.appendChild(document.createTextNode(element))
+    });
+
+    postCont.appendChild(title)
+    postCont.appendChild(description)
+    postCont.appendChild(creator)
+    postCont.appendChild(category)
+    postCont.setAttribute("post_id", post.id)
 }

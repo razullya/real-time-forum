@@ -15,6 +15,8 @@ type Post interface {
 	//	GET
 	GetPostsByUsername(username string) ([]models.Post, error)
 	GetPostById(id int) (models.Post, error)
+	GetCategoriesByPostId(id int) ([]string, error)
+
 	GetAllPosts() ([]models.Post, error)
 	GetAllCategories() ([]string, error)
 	GetCategoriesById(id int) ([]string, error)
@@ -178,6 +180,22 @@ func (p *PostStorage) GetAllCategories() ([]string, error) {
 	var categories []string
 	query := `SELECT DISTINCT tag FROM categories;`
 	rows, err := p.db.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("storage: get all categories: %w", err)
+	}
+	for rows.Next() {
+		cat := ""
+		if err := rows.Scan(&cat); err != nil {
+			return nil, fmt.Errorf("storage: get all categories: %w", err)
+		}
+		categories = append(categories, cat)
+	}
+	return categories, nil
+}
+func (p *PostStorage) GetCategoriesByPostId(id int) ([]string, error) {
+	var categories []string
+	query := `SELECT tag FROM categories WHERE id_post=$1;`
+	rows, err := p.db.Query(query, id)
 	if err != nil {
 		return nil, fmt.Errorf("storage: get all categories: %w", err)
 	}

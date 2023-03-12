@@ -1,10 +1,10 @@
-const route = (event) => {
+const route = async (event) => {
     event = event || window.event;
     event.preventDefault();
     window.history.pushState({}, '', event.target.href);
-    handleLocation();
+    await handleLocation(event);
 };
-getAllPosts()
+
 const routes = {
     404: '/pages/404.html',
     '/': '/pages/main/mainno.html',
@@ -28,10 +28,10 @@ const routesAuth = {
 }
 
 
-const handleLocation = async () => {
+const handleLocation = async (event) => {
     const path = window.location.pathname
 
-    checkCookie()
+    await checkCookie()
         .then(async result => {
             console.log(path)
             if (path === '/') {
@@ -50,7 +50,7 @@ const handleLocation = async () => {
                 return
             }
             if (path === '/post') {
-                getPostById()
+
                 const route = routesAuth[path] || routesAuth[404]
                 const html = await fetch(route).then((data) => data.text());
                 document.getElementById('main-page').innerHTML = html
@@ -66,6 +66,7 @@ const handleLocation = async () => {
 
             if (path === '/') {
                 document.getElementById('main-page').innerHTML = ""
+                getAllPosts()
 
                 const route = routes[path] || routes[404]
                 const html = await fetch(route).then((data) => data.text());
@@ -90,33 +91,4 @@ window.route = route;
 
 handleLocation();
 
-
-// setInterval(getAllPosts, 2000);
-
-
-const getPostById = (event) => {
-    event.preventDefault();
-    socket.close();
-
-
-    socket = new WebSocket("ws://localhost:8080/post");
-    socket.addEventListener('open', () => {
-
-        const urlParams = new URLSearchParams(event.target.search);
-        const id = urlParams.get('id');
-        console.log(id)
-        socket.send(JSON.stringify({
-            'id': id
-        }));
-
-        socket.addEventListener('message', event => {
-            const data = JSON.parse(event.data);
-
-            console.log(data)
-
-            event.target.href = "/post"
-            route(event)
-        });
-    });
-};
 

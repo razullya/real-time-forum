@@ -14,10 +14,10 @@ type Service struct {
 
 func NewService(storages *storage.Storage) *Service {
 	return &Service{
-		Auth: newAuthService(storages.Auth),
-		Post: newPostService(storages.Post),
-		User:     newUserService(storages.User),
-		Comment: newCommentService(storages.Comment),
+		Auth:     newAuthService(storages.Auth),
+		Post:     newPostService(storages.Post),
+		User:     newUserService(storages),
+		Comment:  newCommentService(storages),
 		Reaction: newReactionService(storages.Reaction),
 	}
 }

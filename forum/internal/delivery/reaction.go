@@ -1,5 +1,9 @@
 package delivery
 
+import (
+	"fmt"
+)
+
 func (h *Handler) likePost(data map[string]interface{}) string {
 	postId, ok := data["post_id"].(int)
 	if !ok {
@@ -61,20 +65,21 @@ func (h *Handler) dislikeComment(data map[string]interface{}) string {
 }
 
 func (h *Handler) createComment(data map[string]interface{}) string {
-	id, ok := data["id"].(int)
+	fmt.Println(data)
+	id, ok := data["id"].(string)
 	if !ok {
-		return h.onError("no id")
+		return h.onError("no id()")
 	}
-	username, ok := data["user"].(string)
+	token, ok := data["token"].(string)
 	if !ok {
-		return h.onError("no username")
+		return h.onError("no token")
 	}
-	comment, ok := data["comment"].(string)
+	description, ok := data["description"].(string)
 	if !ok {
 		return h.onError("no comment")
 	}
 
-	if err := h.service.Comment.CreateComment(id, username, comment); err != nil {
+	if err := h.service.Comment.CreateComment(id, token, description); err != nil {
 		return h.onError(err.Error())
 	}
 	return statusOK

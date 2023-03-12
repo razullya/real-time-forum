@@ -52,20 +52,25 @@ func (h *Handler) getPost(data map[string]interface{}) string {
 	if err != nil {
 		return h.onError(err.Error())
 	}
-	comments, err := h.service.GetCommentsByIdPost(id)
+
+	post.Category, err = h.service.GetCategoriesByPostId(post.Id)
 	if err != nil {
 		return h.onError(err.Error())
 	}
+	// comments, err := h.service.GetCommentsByIdPost(id)
+	// if err != nil {
+	// 	return h.onError(err.Error())
+	// }
 
-	for i := 0; i < len(comments); i++ {
-		comments[i].Likes, comments[i].Dislikes, err = h.service.Reaction.GetCounts(comments[i].Id, "comment")
-		if err != nil {
-			return h.onError(err.Error())
-		}
-		if err := h.service.Post.UpdateCountsReactions("comment", comments[i].Likes, comments[i].Dislikes, comments[i].Id); err != nil {
-			return h.onError(err.Error())
-		}
-	}
+	// for i := 0; i < len(comments); i++ {
+	// 	comments[i].Likes, comments[i].Dislikes, err = h.service.Reaction.GetCounts(comments[i].Id, "comment")
+	// 	if err != nil {
+	// 		return h.onError(err.Error())
+	// 	}
+	// 	if err := h.service.Post.UpdateCountsReactions("comment", comments[i].Likes, comments[i].Dislikes, comments[i].Id); err != nil {
+	// 		return h.onError(err.Error())
+	// 	}
+	// }
 	post.Likes, post.Dislikes, err = h.service.Reaction.GetCounts(post.Id, "post")
 	if err != nil {
 		return h.onError(err.Error())

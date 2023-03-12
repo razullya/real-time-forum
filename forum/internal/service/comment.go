@@ -3,23 +3,29 @@ package service
 import (
 	"forum/internal/storage"
 	"forum/models"
+	"strconv"
 )
 
 type Comment interface {
-	CreateComment(id int, username string, comment string) error
+	CreateComment(id string, token string, comment string) error
 	GetCommentsByIdPost(id int) ([]models.Comment, error)
 }
 type CommentService struct {
-	storage storage.Comment
+	storage storage.Storage
 }
 
-func newCommentService(storage storage.Comment) *CommentService {
+func newCommentService(storage *storage.Storage) *CommentService {
 	return &CommentService{
-		storage: storage,
+		storage: *storage,
 	}
 }
-func (c *CommentService) CreateComment(id int, username string, comment string) error {
-	if err := c.storage.CreateComment(id, username, comment); err != nil {
+func (c *CommentService) CreateComment(id string, token string, comment string) error {
+	idd, _ := strconv.Atoi(id)
+	user, err := c.storage.Auth.GetUserByToken(token)
+	if err != nil {
+		return err
+	}
+	if err := c.storage.CreateComment(idd, user.Username, comment); err != nil {
 		return err
 	}
 	return nil
