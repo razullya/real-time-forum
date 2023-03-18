@@ -1,30 +1,39 @@
 
-const onCreatePost = (event) => {
+const onCreatePost = async (event) => {
     event.preventDefault();
-    socket.close();
-    console.log('ya tut')
-    socket = new WebSocket("ws://localhost:8080/post/create")
-    socket.addEventListener('open', () => {
-        const post_form = document.querySelector('#createpost_form')
-        const formData = new FormData(post_form)
-        socket.send(JSON.stringify({
+    const post_form = document.querySelector('#createpost_form')
+    const formData = new FormData(post_form)
+    await fetch('http://localhost:8080/post/create', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
             'title': formData.get('title'),
             'description': formData.get('description'),
             'category': formData.get('category'),
             'token': getCookie('token')
-        }))
+        })
     })
-    socket.addEventListener('message', event => {
-        const data = JSON.parse(event.data)
+        .then(response => {
+            console.log(response);
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Network response was not ok')
+        })
+        .then(async data => {
 
-        if (data.error) {
-            const newDiv = document.createElement('div').appendChild(document.createTextNode(data.error));
-            document.body.appendChild(newDiv);
-            return
-        }
-        event.target.href = "/"
-        route(event)
-    })
+
+            if (data) {
+               console.log(data)
+                // event.target.href = "/"
+                // route(event)
+            } else {
+                console.log(data.Text)
+                route(event)
+            }
+        })
 }
 
 function createPostOnMainPage(post) {
@@ -52,27 +61,28 @@ function createPostOnMainPage(post) {
     posts.appendChild(postCont)
 }
 
-function getAllPosts() {
-
-    socket.close();
-
-    socket = new WebSocket("ws://localhost:8080/post/all");
-    socket.addEventListener('open', () => {
-        socket.send('');
-        socket.addEventListener('message', event => {
-            const data = JSON.parse(event.data);
-
-            if (data.error) {
-                return;
-            }
-            prepairPosts()
-
-            data.forEach(element => {
-                createPostOnMainPage(element)
-            });
-
-        });
+async function getAllPosts() {
+    await fetch('http://localhost:8080/post/all', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: ''
     })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Network response was not ok')
+        })
+        .then(async data => {
+            if (data) {
+                prepairPosts()
+                data.forEach(element => {
+                    createPostOnMainPage(element)
+                });
+            }
+        })
 
 }
 function prepairPosts() {
@@ -88,35 +98,45 @@ function prepairPosts() {
         posts.innerHTML = ""
     }
 }
-const getPostById = (event) => {
+const getPostById = async (event) => {
     event.preventDefault();
-    socket.close();
 
-    socket = new WebSocket("ws://localhost:8080/post");
-    socket.addEventListener('open', () => {
-
-        const urlParams = new URLSearchParams(event.target.search);
-        const id = urlParams.get('id');
-        console.log(id)
-        socket.send(JSON.stringify({
+    const urlParams = new URLSearchParams(event.target.search);
+    const id = urlParams.get('id');
+    await fetch('http://localhost:8080/post', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
             'id': id
-        }));
+        })
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Network response was not ok')
+        })
+        .then(async data => {
 
-        socket.addEventListener('message', async (event) => {
-            const data = JSON.parse(event.data);
 
-            event.target.href = "/post"
-            await route(event)
+            if (data) {
+                event.target.href = "/post"
+                await route(event)
 
-            createPostOnPage(data)
-
-        });
-    });
+                createPostOnPage(data)
+                getAllPostComments()
+            } else {
+                console.log(data.Text)
+                route(event)
+            }
+        })
 };
 function createPostOnPage(post) {
-    
+
     const postCont = document.getElementById('post-info');
-   
+
 
     const title = document.createElement('a')
     title.className = 'post__title'
@@ -130,7 +150,7 @@ function createPostOnPage(post) {
     const creator = document.createElement('a')
     creator.className = 'post__title'
     creator.href = 'profile?creator=' + post.creator
-    creator.setAttribute('onclick', 'getPostById(event)')
+    creator.setAttribute('onclick', 'getOtherUser(event)')
     creator.appendChild(document.createTextNode(post.creator))
 
     const category = document.createElement('div')

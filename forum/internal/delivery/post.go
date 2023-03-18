@@ -1,101 +1,123 @@
 package delivery
 
 import (
-	"fmt"
+	"encoding/json"
 	"forum/models"
+	"net/http"
 	"strconv"
 )
 
-func (h *Handler) createPost(data map[string]interface{}) string {
-	title, ok := data["title"].(string)
-	if !ok {
-		return h.onError("no title")
+func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	if r.Method != http.MethodPost {
+		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
+		return
 	}
-	description, ok := data["description"].(string)
-	if !ok {
-		return h.onError("no description")
+	type CreatePostResponse struct {
+		Title       string `json:"title"`
+		Description string `json:"description"`
+		Category    string `json:"category"`
+		Token       string `json:"token"`
 	}
-	category, ok := data["category"].(string)
-	if !ok {
-		return h.onError("no password")
+
+	var resp CreatePostResponse
+	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
 	}
-	token, ok := data["token"].(string)
-	if !ok {
-		return h.onError("no token")
-	}
+
 	post := models.Post{
-		Title:       title,
-		Description: description,
-		Category:    []string{category},
+		Title:       resp.Title,
+		Description: resp.Description,
+		Category:    []string{resp.Category},
 	}
-	user, err := h.service.Auth.GetUserByToken(token)
+	user, err := h.service.Auth.GetUserByToken(resp.Token)
 	if err != nil {
-		return h.onError(err.Error())
+		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
+		return
 	}
 	if err := h.service.Post.CreatePost(post, user.Username); err != nil {
-		return h.onError(err.Error())
-	}
-	return statusOK
-}
-func (h *Handler) getPost(data map[string]interface{}) string {
-	fmt.Println(data)
-	idIn, ok := data["id"].(string)
-	if !ok {
-		return h.onError("no id")
-	}
-	id, err := strconv.Atoi(idIn)
-	if err != nil {
-		return h.onError("incorrect id")
+		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
 
+		return
+	}
+	h.response(w, statusOK)
+}
+
+func (h *Handler) getPost(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	if r.Method != http.MethodGet {
+		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
+		return
+	}
+	type GetPostResponse struct {
+		Id string `json:"id"`
+	}
+
+	var resp GetPostResponse
+	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
+	}
+	id, err := strconv.Atoi(resp.Id)
+	if err != nil {
+		h.response(w, h.onError(http.StatusText(http.StatusBadRequest), http.StatusBadRequest))
+		return
 	}
 	post, err := h.service.Post.GetPostById(id)
 	if err != nil {
-		return h.onError(err.Error())
+		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
+		return
 	}
-
 	post.Category, err = h.service.GetCategoriesByPostId(post.Id)
 	if err != nil {
-		return h.onError(err.Error())
+		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
+		return
 	}
-	// comments, err := h.service.GetCommentsByIdPost(id)
-	// if err != nil {
-	// 	return h.onError(err.Error())
-	// }
-
-	// for i := 0; i < len(comments); i++ {
-	// 	comments[i].Likes, comments[i].Dislikes, err = h.service.Reaction.GetCounts(comments[i].Id, "comment")
-	// 	if err != nil {
-	// 		return h.onError(err.Error())
-	// 	}
-	// 	if err := h.service.Post.UpdateCountsReactions("comment", comments[i].Likes, comments[i].Dislikes, comments[i].Id); err != nil {
-	// 		return h.onError(err.Error())
-	// 	}
-	// }
 	post.Likes, post.Dislikes, err = h.service.Reaction.GetCounts(post.Id, "post")
 	if err != nil {
-		return h.onError(err.Error())
-
+		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
+		return
 	}
 	if err := h.service.Post.UpdateCountsReactions("post", post.Likes, post.Dislikes, post.Id); err != nil {
-		return h.onError(err.Error())
+		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
+		return
 	}
-	resp, err := h.structToJSON(post)
-	if err != nil {
-		return h.onError(err.Error())
-	}
-	return string(resp)
+	h.response(w, post)
 }
-func (h *Handler) getAllPosts(data map[string]interface{}) string {
-
+func (h *Handler) getAllPosts(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
 	posts, err := h.service.GetAllPosts()
 	if err != nil {
-		return h.onError(err.Error())
+		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
+		return
+	}
+	h.response(w, posts)
+}
+func (h *Handler) getAllComment(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	if r.Method != http.MethodGet {
+		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
+		return
+	}
+	type GetCommentResponse struct {
+		Id string `json:"id"`
 	}
 
-	resp, err := h.structToJSON(posts)
+	var resp GetCommentResponse
+	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
+	}
+
+	comments, err := h.service.Comment.GetCommentsByIdPost(resp.Id)
 	if err != nil {
-		return h.onError(err.Error())
+		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
+		return
 	}
-
-	return string(resp)
+	h.response(w, comments)
 }

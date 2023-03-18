@@ -126,6 +126,9 @@ func validUser(user models.User) error {
 	return nil
 }
 func (s *AuthService) CheckToken(token string) error {
+	if token == "" {
+		return errors.New("no tokens")
+	}
 	return s.storage.CheckToken(token)
 }
 

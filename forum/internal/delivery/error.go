@@ -1,7 +1,13 @@
 package delivery
 
-import "fmt"
+type Error struct {
+	Status int
+	Text   string
+}
 
-func (h *Handler) onError(err string) string {
-	return fmt.Sprintf(`{"error":"%s"}`, err)
+func (h *Handler) onError(text string, status int) Error {
+	return Error{
+		Status: status,
+		Text:   text,
+	}
 }

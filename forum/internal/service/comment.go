@@ -8,7 +8,7 @@ import (
 
 type Comment interface {
 	CreateComment(id string, token string, comment string) error
-	GetCommentsByIdPost(id int) ([]models.Comment, error)
+	GetCommentsByIdPost(id string) ([]models.Comment, error)
 }
 type CommentService struct {
 	storage storage.Storage
@@ -30,8 +30,10 @@ func (c *CommentService) CreateComment(id string, token string, comment string) 
 	}
 	return nil
 }
-func (c *CommentService) GetCommentsByIdPost(id int) ([]models.Comment, error) {
-	comments, err := c.storage.GetCommentsByIdPost(id)
+func (c *CommentService) GetCommentsByIdPost(id string) ([]models.Comment, error) {
+	idd, _ := strconv.Atoi(id)
+
+	comments, err := c.storage.GetCommentsByIdPost(idd)
 	if err != nil {
 		return nil, err
 	}

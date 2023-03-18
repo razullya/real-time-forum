@@ -10,11 +10,17 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var statusOK = `{"status":"OK"}`
+var statusOK = Status{
+	Success: true,
+}
 
 var upgrader = &websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+}
+
+type Status struct {
+	Success bool `json:"success"`
 }
 
 type Handler struct {
@@ -30,46 +36,29 @@ func NewHandler(services *service.Service) *Handler {
 	}
 }
 
-/*
-post
--all
--one
--create
--like
--dislike
-
-auth
--signin
--signup
--logout
-
-comment
--create
--like
--dislike
-
-user
--profile
-*/
 func (h *Handler) InitRoutes() {
-	h.Mux.HandleFunc("/signin", h.wsEndpoint)
-	h.Mux.HandleFunc("/signup", h.wsEndpoint)
+	h.Mux.HandleFunc("/signin", h.signIn)
+	h.Mux.HandleFunc("/signup", h.signUp)
 
-	h.Mux.HandleFunc("/logout", h.wsEndpoint)
+	h.Mux.HandleFunc("/logout", h.logOut)
 
-	h.Mux.HandleFunc("/token", h.wsEndpoint)
+	h.Mux.HandleFunc("/token", h.checkToken)
 
-	h.Mux.HandleFunc("/post", h.wsEndpoint)
-	h.Mux.HandleFunc("/post/all", h.wsEndpoint)
+	h.Mux.HandleFunc("/post", h.getPost)
+	h.Mux.HandleFunc("/post/all", h.getAllPosts)
 
-	h.Mux.HandleFunc("/post/like", h.wsEndpoint)
-	h.Mux.HandleFunc("/post/dislike", h.wsEndpoint)
-	h.Mux.HandleFunc("/post/create", h.wsEndpoint)
+	h.Mux.HandleFunc("/post/like", h.likePost)
+	h.Mux.HandleFunc("/post/dislike", h.dislikePost)
+	h.Mux.HandleFunc("/post/create", h.createPost)
+	h.Mux.HandleFunc("/post/comments", h.getAllComment)
 
-	h.Mux.HandleFunc("/comment/create", h.wsEndpoint)
-	h.Mux.HandleFunc("/comment/like", h.wsEndpoint)
-	h.Mux.HandleFunc("/comment/dislike", h.wsEndpoint)
-	h.Mux.HandleFunc("/user", h.wsEndpoint)
+	h.Mux.HandleFunc("/comment/create", h.createComment)
+	h.Mux.HandleFunc("/comment/like", h.likeComment)
+	h.Mux.HandleFunc("/comment/dislike", h.dislikeComment)
+
+	h.Mux.HandleFunc("/user", h.getUser)
+	h.Mux.HandleFunc("/user/other", h.getOtherUser)
+
 }
 
 func (h *Handler) wsEndpoint(w http.ResponseWriter, r *http.Request) {
@@ -98,7 +87,7 @@ func (h *Handler) reader(conn *websocket.Conn, path string) {
 		}
 		// fmt.Println("данные получены")
 
-		resp = h.RouterWS(data, path)
+		// resp = h.RouterWS(data, path)
 		// fmt.Println(resp)
 		// fmt.Println("прошли изменения")
 
@@ -108,45 +97,14 @@ func (h *Handler) reader(conn *websocket.Conn, path string) {
 		}
 	}
 }
-func (h *Handler) RouterWS(data map[string]interface{}, path string) string {
 
-	fmt.Println(path)
-	switch path {
-	case "/signin":
-		return h.signIn(data)
-	case "/signup":
-		return h.signUp(data)
-	case "/logout":
-		return h.logOut(data)
-	case "/token":
-		return h.checkToken(data)
-	case "/post":
-		return h.getPost(data)
-	case "/post/create":
-		return h.createPost(data)
-	case "/post/all":
-		return h.getAllPosts(data)
-	case "/post/like":
-		return h.likePost(data)
-	case "/post/dislike":
-		return h.dislikePost(data)
-	case "/comment/create":
-		return h.createComment(data)
-	case "/comment/like":
-		return h.likeComment(data)
-	case "/comment/dislike":
-		return h.dislikeComment(data)
-	case "/user":
-		return h.getUser(data)
-	default:
-		return h.onError("bad action")
-	}
-}
-func (h *Handler) structToJSON(data interface{}) ([]byte, error) {
-
-	jsonData, err := json.Marshal(data)
+func (h *Handler) response(w http.ResponseWriter, data interface{}) {
+	resp, err := json.Marshal(data)
 	if err != nil {
-		return nil, err
+		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
+		return
 	}
-	return jsonData, nil
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(resp)
 }

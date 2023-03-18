@@ -1,87 +1,143 @@
 package delivery
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"forum/internal/service"
 	"forum/models"
+	"net/http"
 )
 
-func (h *Handler) signIn(data map[string]interface{}) string {
-	username, ok := data["username"].(string)
-	if !ok {
-		return h.onError("no one tokens")
+func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+	if r.Method != http.MethodPost {
+		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
+		return
 	}
-	password, ok := data["password"].(string)
-	if !ok {
-		return h.onError("no one tokens")
+	
+	type SignInResponse struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
 	}
 
-	sessionToken, err := h.service.Auth.GenerateSessionToken(username, password)
+	var resp SignInResponse
+	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
+	}
+
+	sessionToken, err := h.service.Auth.GenerateSessionToken(resp.Username, resp.Password)
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
-
-			return h.onError(err.Error())
+			h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+			return
 		}
-		return h.onError(err.Error())
+		h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
+		return
 	}
 
-	return fmt.Sprintf(`{"token": "%s"}`, sessionToken)
+	h.response(w, map[string]string{"token": sessionToken})
 }
 
-func (h *Handler) signUp(data map[string]interface{}) string {
-	email, ok := data["email"].(string)
-	if !ok {
-		return h.onError("no email")
+func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+
+	if r.Method != http.MethodPost {
+		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
+		return
 	}
-	username, ok := data["username"].(string)
-	if !ok {
-		return h.onError("no username")
+
+	type SignUpResponse struct {
+		Email    string `json:"email"`
+		Username string `json:"username"`
+		Password string `json:"password"`
 	}
-	password, ok := data["password"].(string)
-	if !ok {
-		return h.onError("no password")
+
+	var resp SignUpResponse
+	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
 	}
+
 	user := models.User{
-		Email:    email,
-		Username: username,
-		Password: password,
+		Email:    resp.Email,
+		Username: resp.Username,
+		Password: resp.Password,
 	}
+	
 	fmt.Println(user)
+
 	if err := h.service.Auth.CreateUser(user); err != nil {
+		fmt.Println(err)
 		if errors.Is(err, service.ErrInvalidUserName) ||
 			errors.Is(err, service.ErrInvalidEmail) ||
 			errors.Is(err, service.ErrInvalidPassword) ||
 			errors.Is(err, service.ErrUserExist) {
-			return h.onError(err.Error())
-
+			h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+			return
 		}
-
-		return h.onError(err.Error())
+		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
+		return
 	}
-	fmt.Println(user)
-	return statusOK
+
+	fmt.Println("no error SignUp")
+
+	h.response(w, statusOK)
 }
 
-func (h *Handler) logOut(data map[string]interface{}) string {
-	token, ok := data["token"].(string)
-	if !ok {
-		return h.onError("no one tokens")
+func (h *Handler) logOut(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+
+	if r.Method != http.MethodPost {
+		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
+		return
 	}
-	if err := h.service.DeleteSessionToken(token); err != nil {
-		return h.onError(err.Error())
+
+	type LogOutResponse struct {
+		Token    string `json:"token"`
 	}
-	return statusOK
+
+	var resp LogOutResponse
+	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
+	}
+
+	if err := h.service.DeleteSessionToken(resp.Token); err != nil {
+		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
+		return
+	}
+
+	h.response(w, statusOK)
 }
 
-func (h *Handler) checkToken(data map[string]interface{}) string {
-	token, ok := data["token"].(string)
-	if !ok {
-		return h.onError("no one tokens")
+func (h *Handler) checkToken(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+
+	if r.Method != http.MethodPost {
+		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
+		return
 	}
-	fmt.Println(token)
-	if err := h.service.CheckToken(token); err != nil {
-		return h.onError("incorrect token")
+
+	type CheckTokenResponse struct {
+		Token string `json:"token"`
 	}
-	return statusOK
+
+	var resp CheckTokenResponse
+	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
+	}
+
+	if err := h.service.CheckToken(resp.Token); err != nil {
+		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
+		return
+	}
+
+	h.response(w, statusOK)
 }

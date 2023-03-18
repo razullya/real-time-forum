@@ -1,5 +1,3 @@
-let socket = new WebSocket("ws://localhost:8080/signup")
-
 function getCookie(name) {
     const value = "; " + document.cookie;
     const parts = value.split("; " + name + "=");
@@ -11,111 +9,103 @@ function deleteCookie(name) {
     document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 }
 
-const checkCookie = () => {
-    return new Promise((resolve, reject) => {
-        const socket = new WebSocket("ws://localhost:8080/token");
-        socket.addEventListener('open', () => {
-            const token = getCookie("token");
-            if (!token) {
-                reject('no token');
-            } else {
-                socket.send(JSON.stringify({ 'token': token }));
-                socket.addEventListener('message', (event) => {
-                    const data = JSON.parse(event.data);
-                    if (data.error) {
-                        reject(data.error);
-                    } else {
-                        resolve('ok');
-                    }
-                    socket.close();
-                });
-            }
-        });
-    });
-};
-
-const onSignUpSubmit = (event) => {
+const onSignUpSubmit = async (event) => {
     event.preventDefault();
-    socket.close();
-
-    socket = new WebSocket("ws://localhost:8080/signup");
-    socket.addEventListener('open', () => {
-        const signUp = document.querySelector('#signup_form');
-        const formData = new FormData(signUp);
-
-        socket.send(JSON.stringify({
+    const signUp = document.querySelector('#signup_form');
+    const formData = new FormData(signUp);
+    await fetch('http://localhost:8080/signup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
             'email': formData.get('email'),
             'username': formData.get('username'),
             'password': formData.get('password')
-        }));
-
-        socket.addEventListener('message', event => {
-            const data = JSON.parse(event.data);
-
-            if (data.error) {
-                const newDiv = document.createElement('div').appendChild(document.createTextNode(data.error));
-                document.body.appendChild(newDiv);
-                return;
-            }
-            event.target.href = "/"
-            route(event)
-        });
+        })
     })
-
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Network response was not ok')
+        })
+        .then(async data => {
+            if (data) {
+                event.target.href = "/"
+                route(event)
+            } else {
+                console.log(data.Text)
+                route(event)
+            }
+        })
 };
 
-const onSignInSubmit = (event) => {
+const onSignInSubmit = async (event) => {
     event.preventDefault();
-    socket.close();
-
-    socket = new WebSocket("ws://localhost:8080/signin");
-    socket.addEventListener('open', () => {
-        const signIn = document.querySelector('#signin_form');
-        const formData = new FormData(signIn);
-
-        socket.send(JSON.stringify({
+    event.preventDefault();
+    const signUp = document.querySelector('#signin_form');
+    const formData = new FormData(signUp);
+    await fetch('http://localhost:8080/signin', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
             'username': formData.get('username'),
             'password': formData.get('password')
-        }));
-
-        socket.addEventListener('message', event => {
-            const data = JSON.parse(event.data);
-            if (data.error) {
-                // const newDiv = document.createElement('div').appendChild(document.createTextNode(data.error));
-                // document.body.appendChild(newDiv);
-                return;
+        })
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
             }
-            var date = new Date();
-            date.setTime(date.getTime() + ( 24 * 60 * 60 * 1000));
-            document.cookie = "token=" + data.token + "; expires=" + date.toUTCString() + "; SameSite=None; Secure";
+            throw new Error('Network response was not ok')
+        })
+        .then(async data => {
 
-            event.target.href = "/"
-            route(event)
-        });
-    });
 
+            if (data) {
+                console.log(data)
+                console.log(data.token)
+                var date = new Date();
+                date.setTime(date.getTime() + (24 * 60 * 60 * 1000));
+                document.cookie = "token=" + data.token + "; expires=" + date.toUTCString() + "; SameSite=None; Secure";
+
+                event.target.href = "/"
+                route(event)
+            } else {
+                console.log(data.Text)
+                route(event)
+            }
+        })
 
 };
 
 
-const onLogOut = (event) => {
+const onLogOut = async (event) => {
     event.preventDefault();
-    socket.close();
 
-    socket = new WebSocket("ws://localhost:8080/logout");
-    socket.addEventListener('open', () => {
-
-        socket.send(JSON.stringify({
+    await fetch('http://localhost:8080/logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
             'token': getCookie("token"),
-        }));
-
-        socket.addEventListener('message', event => {
-            // const data = JSON.parse(event.data);
+        })
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Network response was not ok')
+        })
+        .then(async data => {
             deleteCookie("token");
-
             event.target.href = "/"
             route(event)
-        });
-    });
+        })
+
 };
 
