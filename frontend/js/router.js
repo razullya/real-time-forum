@@ -30,7 +30,7 @@ const routesAuth = {
 
 const handleLocation = async (event) => {
     const path = window.location.pathname
-    const token = getCookie('token');
+    const token = checkCookie('token');
 
     await fetch('http://localhost:8080/token', {
         method: 'POST',
@@ -52,7 +52,7 @@ const handleLocation = async (event) => {
                 console.log(path)
                 if (path === '/') {
                     document.getElementById('main-page').innerHTML = ""
-                    // getAllPosts()
+                    getAllPosts()
                     const route = routesAuth[path] || routesAuth[404]
                     const html = await fetch(route).then((data) => data.text());
                     document.getElementById('main-nav').innerHTML = html
@@ -89,7 +89,7 @@ const handleLocation = async (event) => {
 
                 if (path === '/') {
                     document.getElementById('main-page').innerHTML = ""
-                    // getAllPosts()
+                    getAllPosts()
 
                     const route = routes[path] || routes[404]
                     const html = await fetch(route).then((data) => data.text());
@@ -111,6 +111,8 @@ const handleLocation = async (event) => {
         .catch(error => {
             console.error('Произошла ошибка:', error);
         });
+
+
 
 
 }

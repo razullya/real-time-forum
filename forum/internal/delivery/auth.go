@@ -17,12 +17,12 @@ func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
-	type SignInResponse struct {
+	type SignInRequest struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
 
-	var resp SignInResponse
+	var resp SignInRequest
 	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
@@ -50,13 +50,13 @@ func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type SignUpResponse struct {
+	type SignUpRequest struct {
 		Email    string `json:"email"`
 		Username string `json:"username"`
 		Password string `json:"password"`
 	}
 
-	var resp SignUpResponse
+	var resp SignUpRequest
 	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
@@ -97,11 +97,11 @@ func (h *Handler) logOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type LogOutResponse struct {
+	type LogOutRequest struct {
 		Token    string `json:"token"`
 	}
 
-	var resp LogOutResponse
+	var resp LogOutRequest
 	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
@@ -124,11 +124,11 @@ func (h *Handler) checkToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type CheckTokenResponse struct {
+	type CheckTokenRequest struct {
 		Token string `json:"token"`
 	}
 
-	var resp CheckTokenResponse
+	var resp CheckTokenRequest
 	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return

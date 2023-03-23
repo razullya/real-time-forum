@@ -1,10 +1,10 @@
 package delivery
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
-
-	"github.com/gorilla/mux"
 )
 
 func (h *Handler) likePost(w http.ResponseWriter, r *http.Request) {
@@ -14,20 +14,30 @@ func (h *Handler) likePost(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
 		return
 	}
-	vars := mux.Vars(r)
-	id := vars["post_id"]
-	token := vars["token"]
-	postId, err := strconv.Atoi(id)
-	if err != nil {
-		h.response(w, h.onError(http.StatusText(http.StatusBadRequest), http.StatusBadRequest))
+	type LikePostRequest struct {
+		Token string `json:"token"`
+		Id    string `json:"id"`
+	}
+
+	var req LikePostRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	user, err := h.service.Auth.GetUserByToken(token)
+	fmt.Println(req, '1')
+	user, err := h.service.Auth.GetUserByToken(req.Token)
 	if err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	if err := h.service.Reaction.CreateReaction(postId, "post", "like", user.Username); err != nil {
+	
+	id, err := strconv.Atoi(req.Id)
+	if err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
+	}
+
+	if err := h.service.Reaction.CreateReaction(id, "post", "like", user.Username); err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
 		return
 	}
@@ -41,20 +51,22 @@ func (h *Handler) dislikePost(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
 		return
 	}
-	vars := mux.Vars(r)
-	id := vars["post_id"]
-	token := vars["token"]
-	postId, err := strconv.Atoi(id)
-	if err != nil {
-		h.response(w, h.onError(http.StatusText(http.StatusBadRequest), http.StatusBadRequest))
+	type DislikePostRequest struct {
+		Token string `json:"token"`
+		Id    int    `json:"id"`
+	}
+
+	var req DislikePostRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	user, err := h.service.Auth.GetUserByToken(token)
+	user, err := h.service.Auth.GetUserByToken(req.Token)
 	if err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	if err := h.service.Reaction.CreateReaction(postId, "post", "dislike", user.Username); err != nil {
+	if err := h.service.Reaction.CreateReaction(req.Id, "post", "dislike", user.Username); err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
 		return
 	}
@@ -65,20 +77,22 @@ func (h *Handler) likeComment(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
 		return
 	}
-	vars := mux.Vars(r)
-	id := vars["post_id"]
-	token := vars["token"]
-	postId, err := strconv.Atoi(id)
-	if err != nil {
-		h.response(w, h.onError(http.StatusText(http.StatusBadRequest), http.StatusBadRequest))
+	type LikeCommentRequest struct {
+		Token string `json:"token"`
+		Id    int    `json:"id"`
+	}
+
+	var req LikeCommentRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	user, err := h.service.Auth.GetUserByToken(token)
+	user, err := h.service.Auth.GetUserByToken(req.Token)
 	if err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	if err := h.service.Reaction.CreateReaction(postId, "comment", "like", user.Username); err != nil {
+	if err := h.service.Reaction.CreateReaction(req.Id, "comment", "like", user.Username); err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
 		return
 	}
@@ -89,20 +103,22 @@ func (h *Handler) dislikeComment(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
 		return
 	}
-	vars := mux.Vars(r)
-	id := vars["post_id"]
-	token := vars["token"]
-	postId, err := strconv.Atoi(id)
-	if err != nil {
-		h.response(w, h.onError(http.StatusText(http.StatusBadRequest), http.StatusBadRequest))
+	type DislikeCommentRequest struct {
+		Token string `json:"token"`
+		Id    int    `json:"id"`
+	}
+
+	var req DislikeCommentRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	user, err := h.service.Auth.GetUserByToken(token)
+	user, err := h.service.Auth.GetUserByToken(req.Token)
 	if err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	if err := h.service.Reaction.CreateReaction(postId, "comment", "dislike", user.Username); err != nil {
+	if err := h.service.Reaction.CreateReaction(req.Id, "comment", "dislike", user.Username); err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
 		return
 	}
@@ -116,12 +132,19 @@ func (h *Handler) createComment(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
 		return
 	}
-	vars := mux.Vars(r)
-	id := vars["id"]
-	token := vars["token"]
-	description := vars["description"]
+	type CreateCommentRequest struct {
+		Id          string `json:"id"`
+		Token       string `json:"token"`
+		Description string `json:"description"`
+	}
 
-	if err := h.service.Comment.CreateComment(id, token, description); err != nil {
+	var req CreateCommentRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
+	}
+	fmt.Println(req)
+	if err := h.service.Comment.CreateComment(req.Id, req.Token, req.Description); err != nil {
 		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
 		return
 	}

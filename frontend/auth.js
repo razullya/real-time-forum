@@ -5,6 +5,41 @@ function getCookie(name) {
         return parts.pop().split(";").shift();
     }
 }
+
+function getNameCookie(name) {
+    const cookies = document.cookie.split("; ");
+    console.log(cookies)
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].split("=");
+        if (cookie[0] === name) {
+            return cookie[1];
+        }
+    }
+    return "";
+}
+
+function getCookieExpirationDate(cookieName) {
+
+    return new Date(document.cookie
+        .split('; ')
+        .find(row => row.startsWith('expires='))
+        ?.split('=')[1]);
+
+}
+
+function checkCookie(cookieName) {
+    const expirationDate = getCookieExpirationDate(cookieName);
+    // console.log(expirationDate);
+    if (Date.now() > expirationDate) {
+        console.log(cookieName, expirationDate);
+        deleteCookie(cookieName)
+
+        return ""
+    } else {
+        return getCookie(cookieName)
+    }
+}
+
 function deleteCookie(name) {
     document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
 }
@@ -31,7 +66,8 @@ const onSignUpSubmit = async (event) => {
             throw new Error('Network response was not ok')
         })
         .then(async data => {
-            if (data) {
+            console.log(data);
+            if (data.success) {
                 event.target.href = "/"
                 route(event)
             } else {
@@ -63,13 +99,10 @@ const onSignInSubmit = async (event) => {
             throw new Error('Network response was not ok')
         })
         .then(async data => {
-
-
-            if (data) {
-                console.log(data)
-                console.log(data.token)
+            if (data.token) {
                 var date = new Date();
                 date.setTime(date.getTime() + (24 * 60 * 60 * 1000));
+
                 document.cookie = "token=" + data.token + "; expires=" + date.toUTCString() + "; SameSite=None; Secure";
 
                 event.target.href = "/"

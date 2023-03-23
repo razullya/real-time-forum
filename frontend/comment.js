@@ -1,75 +1,88 @@
-const onCreateComment = (event) => {
+const onCreateComment = async (event) => {
     event.preventDefault();
-    socket.close();
-    socket = new WebSocket("ws://localhost:8080/comment/create")
-    socket.addEventListener('open', () => {
-        const comment_form = document.querySelector('#createcomment_form')
-        const formData = new FormData(comment_form)
-        const idFromPost = document.getElementById('post-info')
 
-        socket.send(JSON.stringify({
+    const comment_form = document.querySelector('#createcomment_form')
+    const formData = new FormData(comment_form)
+    const idFromPost = document.getElementById('post-info')
+    const searchParams = new URLSearchParams(window.location.search);
+    const id = searchParams.get('id');
+    await fetch('http://localhost:8080/comment/create?id=' + id, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
             'id': idFromPost.getAttribute('post_id'),
             'token': getCookie('token'),
             'description': formData.get('form_auth_input'),
-        }))
+        })
     })
-    socket.addEventListener('message', event => {
-        const data = JSON.parse(event.data)
-
-        if (data.error) {
-            const newDiv = document.createElement('div').appendChild(document.createTextNode(data.error));
-            document.body.appendChild(newDiv);
-            return
-        }
-        const comment_form = document.getElementById('form_auth_input')
-
-        comment_form.value = ""
-    })
-}
-
-function getAllPostComments() {
-
-    socket.close();
-
-    socket = new WebSocket("ws://localhost:8080/post/comments");
-    socket.addEventListener('open', () => {
-        const idFromPost = document.getElementById('post-info')
-
-        socket.send(JSON.stringify({ 'id': idFromPost.getAttribute('post_id') }));
-        console.log('comment');
-        socket.addEventListener('message', event => {
-            const data = JSON.parse(event.data);
-
-            if (data.error) {
-                return;
+        .then(response => {
+            if (response.ok) {
+                return response.json();
             }
+            throw new Error('Network response was not ok')
+        })
+        .then(async data => {
 
-            console.log(data)
-            data.forEach(element => {
-                createCommentOnPostPage(element)
-            });
 
-        });
+            if (data) {
+                const comment_form = document.getElementById('form_auth_input')
+                comment_form.value = ""
+                getAllPostComments()
+
+            } else {
+                console.log(data.Text)
+                route(event)
+            }
+        })
+}
+function prepairComments() {
+    const div = document.getElementById('main-page')
+
+    if (div.querySelectorAll("#comments").length == 0) {
+        const comments = document.createElement('div')
+        comments.id = 'comments'
+        div.appendChild(comments)
+    } else {
+        const comments = document.getElementById("comments")
+        comments.innerHTML = ""
+    }
+}
+async function getAllPostComments() {
+    prepairComments()
+    const idFromPost = document.getElementById('post-info')
+    const searchParams = new URLSearchParams(window.location.search);
+    const id = searchParams.get('id');
+    await fetch('http://localhost:8080/post/comments?id=' + id, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
     })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Network response was not ok')
+        })
+        .then(async data => {
+
+
+            if (data) {
+                console.log(data)
+                data.forEach(element => {
+                    createCommentOnPostPage(element)
+                });
+
+            } else {
+                console.log(data.Text)
+
+            }
+        })
 
 }
 function createCommentOnPostPage(comment) {
-    const comCont = document.createElement('div');
-    comCont.className = 'comment'
 
-    const creator = document.createElement('a')
-    creator.className = 'creator'
-    creator.href = 'creator?name=' + comment.creator
-    creator.setAttribute('onclick', 'getOtherUser(event)')////
-    creator.appendChild(document.createTextNode(comment.creator))
-
-    const description = document.createElement('div')
-    description.className = 'description'
-    description.appendChild(document.createTextNode(comment.text))
-
-    comCont.appendChild(creator)
-    comCont.appendChild(description)
-
-    const comments = document.getElementById('comments')
-    comments.appendChild(comCont)
+    
 }

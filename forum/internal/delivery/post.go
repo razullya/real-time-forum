@@ -14,14 +14,14 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
 		return
 	}
-	type CreatePostResponse struct {
+	type CreatePostRequest struct {
 		Title       string `json:"title"`
 		Description string `json:"description"`
 		Category    string `json:"category"`
 		Token       string `json:"token"`
 	}
 
-	var resp CreatePostResponse
+	var resp CreatePostRequest
 	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
@@ -48,20 +48,14 @@ func (h *Handler) createPost(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getPost(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
+
 	if r.Method != http.MethodGet {
 		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
 		return
 	}
-	type GetPostResponse struct {
-		Id string `json:"id"`
-	}
-
-	var resp GetPostResponse
-	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
-		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
-		return
-	}
-	id, err := strconv.Atoi(resp.Id)
+	query := r.URL.Query()
+	idd := query.Get("id")
+	id, err := strconv.Atoi(idd)
 	if err != nil {
 		h.response(w, h.onError(http.StatusText(http.StatusBadRequest), http.StatusBadRequest))
 		return
@@ -90,11 +84,18 @@ func (h *Handler) getPost(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) getAllPosts(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
+
+	if r.Method != http.MethodPost {
+		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
+		return
+	}
+
 	posts, err := h.service.GetAllPosts()
 	if err != nil {
 		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
 		return
 	}
+
 	h.response(w, posts)
 }
 func (h *Handler) getAllComment(w http.ResponseWriter, r *http.Request) {
@@ -104,20 +105,14 @@ func (h *Handler) getAllComment(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
 		return
 	}
-	type GetCommentResponse struct {
-		Id string `json:"id"`
-	}
+	query := r.URL.Query()
+	id := query.Get("id")
 
-	var resp GetCommentResponse
-	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
-		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
-		return
-	}
-
-	comments, err := h.service.Comment.GetCommentsByIdPost(resp.Id)
+	comments, err := h.service.Comment.GetCommentsByIdPost(id)
 	if err != nil {
 		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
 		return
 	}
+
 	h.response(w, comments)
 }

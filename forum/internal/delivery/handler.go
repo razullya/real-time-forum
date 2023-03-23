@@ -44,20 +44,20 @@ func (h *Handler) InitRoutes() {
 
 	h.Mux.HandleFunc("/token", h.checkToken)
 
-	h.Mux.HandleFunc("/post", h.getPost)
-	h.Mux.HandleFunc("/post/all", h.getAllPosts)
+	h.Mux.HandleFunc("/post", h.getPost)         
+	h.Mux.HandleFunc("/post/all", h.getAllPosts) 
 
-	h.Mux.HandleFunc("/post/like", h.likePost)
-	h.Mux.HandleFunc("/post/dislike", h.dislikePost)
-	h.Mux.HandleFunc("/post/create", h.createPost)
-	h.Mux.HandleFunc("/post/comments", h.getAllComment)
+	h.Mux.HandleFunc("/post/like", h.likePost)          //
+	h.Mux.HandleFunc("/post/dislike", h.dislikePost)    //
+	h.Mux.HandleFunc("/post/create", h.createPost)      
+	h.Mux.HandleFunc("/post/comments", h.getAllComment) 
 
-	h.Mux.HandleFunc("/comment/create", h.createComment)
-	h.Mux.HandleFunc("/comment/like", h.likeComment)
-	h.Mux.HandleFunc("/comment/dislike", h.dislikeComment)
+	h.Mux.HandleFunc("/comment/create", h.createComment)   
+	h.Mux.HandleFunc("/comment/like", h.likeComment)       //
+	h.Mux.HandleFunc("/comment/dislike", h.dislikeComment) //
 
-	h.Mux.HandleFunc("/user", h.getUser)
-	h.Mux.HandleFunc("/user/other", h.getOtherUser)
+	h.Mux.HandleFunc("/profile", h.getUser) //
+	// h.Mux.HandleFunc("/user/other", h.getOtherUser)//
 
 }
 

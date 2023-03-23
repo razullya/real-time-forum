@@ -25,10 +25,10 @@ const onCreatePost = async (event) => {
         .then(async data => {
 
 
-            if (data) {
-               console.log(data)
-                // event.target.href = "/"
-                // route(event)
+            if (data.success) {
+                console.log(data)
+                event.target.href = "/"
+                route(event)
             } else {
                 console.log(data.Text)
                 route(event)
@@ -89,7 +89,6 @@ function prepairPosts() {
     const div = document.getElementById('main-page')
 
     if (div.querySelectorAll("#posts").length == 0) {
-
         const posts = document.createElement('div')
         posts.id = 'posts'
         div.appendChild(posts)
@@ -103,14 +102,11 @@ const getPostById = async (event) => {
 
     const urlParams = new URLSearchParams(event.target.search);
     const id = urlParams.get('id');
-    await fetch('http://localhost:8080/post', {
-        method: 'POST',
+    await fetch('http://localhost:8080/post?id=' + id, {
+        method: 'GET',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            'id': id
-        })
     })
         .then(response => {
             if (response.ok) {
@@ -122,7 +118,7 @@ const getPostById = async (event) => {
 
 
             if (data) {
-                event.target.href = "/post"
+                event.target.href = "/post?id=" + id
                 await route(event)
 
                 createPostOnPage(data)
@@ -134,7 +130,7 @@ const getPostById = async (event) => {
         })
 };
 function createPostOnPage(post) {
-
+    console.log(post);
     const postCont = document.getElementById('post-info');
 
 
@@ -149,8 +145,8 @@ function createPostOnPage(post) {
 
     const creator = document.createElement('a')
     creator.className = 'post__title'
-    creator.href = 'profile?creator=' + post.creator
-    creator.setAttribute('onclick', 'getOtherUser(event)')
+    creator.href = 'profile?username=' + post.creator
+    creator.setAttribute('onclick', 'getUser(event)')
     creator.appendChild(document.createTextNode(post.creator))
 
     const category = document.createElement('div')
@@ -159,9 +155,79 @@ function createPostOnPage(post) {
         category.appendChild(document.createTextNode(element))
     });
 
+    const like = document.createElement('a')
+    like.className = 'post__like'
+    like.href = '/post/like'
+    like.setAttribute('onclick', 'likePost(event)')
+    like.appendChild(document.createTextNode('LIKE'))
+
+    const dislike = document.createElement('a')
+    dislike.className = 'post__dislike'
+    dislike.href = '/post/dislike'
+    dislike.setAttribute('onclick', 'dislikePost(event)')
+    dislike.appendChild(document.createTextNode('DISLIKE'))
+
+    const count = document.createElement('div')
+    count.className = 'post__count'
+
+    const likes = document.createElement('div')
+    likes.id = 'likes'
+    likes.appendChild(document.createTextNode('0'))
+
+    const dislikes = document.createElement('div')
+    dislikes.id = 'dislikes'
+    dislikes.appendChild(document.createTextNode('0'))
+
+
+    count.appendChild(likes)
+    count.appendChild(dislikes)
+
+
     postCont.appendChild(title)
     postCont.appendChild(description)
     postCont.appendChild(creator)
     postCont.appendChild(category)
+    postCont.appendChild(like)
+    postCont.appendChild(dislike)
+    postCont.appendChild(count)
+
     postCont.setAttribute("post_id", post.id)
+}
+const likePost = async (event) => {
+    event.preventDefault();
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const id = searchParams.get('id');
+    await fetch('http://localhost:8080/post/like', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            'id': id,
+            'token': getCookie('token'),
+        })
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Network response was not ok')
+        })
+        .then(async data => {
+
+            console.log(data);
+            if (data.success) {
+
+                const likes = document.getElementById('likes')
+                likes.innerHTML=''
+
+                console.log(likes);
+
+
+            } else {
+                console.log(data.Text)
+                route(event)
+            }
+        })
 }
