@@ -47,7 +47,14 @@ const categoriesTable = `CREATE TABLE IF NOT EXISTS categories (
 	id_post INT
 );`
 
-var tables = []string{userTable, postTable, commentTable, reactionTable, categoriesTable}
+const chatTable = `CREATE TABLE IF NOT EXISTS chat (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	first_user TEXT,
+	second_user TEXT,
+	token TEXT
+);`
+
+var tables = []string{userTable, postTable, commentTable, reactionTable, categoriesTable, chatTable}
 
 func InitDB() (*sql.DB, error) {
 	db, err := sql.Open("sqlite3", "forum.db?_foreign_keys=1")

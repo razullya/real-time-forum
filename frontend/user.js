@@ -20,7 +20,7 @@ const getUser = async (event) => {
 
             console.log(data);
             if (data) {
-                event.target.href = "/profile"
+                event.target.href = "/profile?username=" + data.username
                 await route(event)
                 createProfileOnPage(data)
 
@@ -86,18 +86,17 @@ const createProfileOnPage = (profile) => {
     main.appendChild(prof)
 }
 
-
 const startChat = async (event) => {
     event.preventDefault();
 
     const urlParams = new URLSearchParams(event.target.search);
     const username = urlParams.get('username');
-    await fetch('http://localhost:8080/chat', {
+    await fetch('http://localhost:8080/chat/check', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ username: username, token: getCookie('token') })
+        body: JSON.stringify({ user: username, token: getCookie('token') })
     })
         .then(response => {
             if (response.ok) {
@@ -109,12 +108,46 @@ const startChat = async (event) => {
 
             console.log(data);
             if (data) {
-                event.target.href = "/profile"
-                await route(event)
-                createProfileOnPage(data)
+
+                createChatOnPage()
+                
             } else {
                 console.log(data.Text)
                 route(event)
             }
         })
+}
+const createChatOnPage = () => {
+    const chat = document.createElement('div');
+    chat.className = 'chat'
+
+    const log = document.createElement('div')
+    log.id = 'log'
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    // form.action = '/submit';
+
+
+    const msg = document.createElement('input');
+    msg.type = 'text';
+    msg.id = 'msg';
+    msg.placeholder = 'send msg';
+    form.appendChild(msg);
+
+    const submitButton = document.createElement('button');
+    submitButton.type = 'submit';
+    submitButton.textContent = 'Send';
+    form.appendChild(submitButton);
+
+
+
+
+
+
+    chat.appendChild(log)
+    chat.appendChild(form)
+
+    const main = document.getElementById('main-page')
+    main.appendChild(chat)
 }

@@ -24,6 +24,7 @@ const routesAuth = {
 
     '/create': '/pages/post/create.html',
     '/profile': 'pages/user/profile.html',//
+    '/chat': '/pages/user/chat.html'
 
 }
 

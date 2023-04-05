@@ -10,6 +10,7 @@ type Service struct {
 	User
 	Comment
 	Reaction
+	Chat
 }
 
 func NewService(storages *storage.Storage) *Service {
@@ -19,5 +20,6 @@ func NewService(storages *storage.Storage) *Service {
 		User:     newUserService(storages),
 		Comment:  newCommentService(storages),
 		Reaction: newReactionService(storages.Reaction),
+		Chat:     newChatService(storages),
 	}
 }

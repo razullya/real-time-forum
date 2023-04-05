@@ -30,7 +30,7 @@ const onCreateComment = async (event) => {
                 const comment_form = document.getElementById('form_auth_input')
                 comment_form.value = ""
                 getAllPostComments()
-
+                
             } else {
                 console.log(data.Text)
                 route(event)
@@ -84,5 +84,22 @@ async function getAllPostComments() {
 }
 function createCommentOnPostPage(comment) {
 
-    
+    const comCont = document.createElement('div');
+    comCont.className = 'comment'
+
+    const creator = document.createElement('a')
+    creator.className = 'creator'
+    creator.href = 'profile?username=' + comment.creator
+    creator.setAttribute('onclick', 'getUser(event)')////
+    creator.appendChild(document.createTextNode(comment.creator))
+
+    const description = document.createElement('div')
+    description.className = 'description'
+    description.appendChild(document.createTextNode(comment.text))
+
+    comCont.appendChild(creator)
+    comCont.appendChild(description)
+
+    const comments = document.getElementById('comments')
+    comments.appendChild(comCont)
 }

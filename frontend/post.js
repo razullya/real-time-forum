@@ -220,7 +220,7 @@ const likePost = async (event) => {
             if (data.success) {
 
                 const likes = document.getElementById('likes')
-                likes.innerHTML=''
+                likes.innerHTML = ''
 
                 console.log(likes);
 
@@ -231,3 +231,68 @@ const likePost = async (event) => {
             }
         })
 }
+const dislikePost = async (event) => {
+    event.preventDefault();
+
+    const searchParams = new URLSearchParams(window.location.search);
+    const id = searchParams.get('id');
+    await fetch('http://localhost:8080/post/dislike', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            'id': id,
+            'token': getCookie('token'),
+        })
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Network response was not ok')
+        })
+        .then(async data => {
+
+            console.log(data);
+            if (data.success) {
+
+                const likes = document.getElementById('dislikes')
+                likes.innerHTML = ''
+
+                console.log(likes);
+
+
+            } else {
+                console.log(data.Text)
+                route(event)
+            }
+        })
+}
+
+// event.preventDefault();
+
+// socket.close();
+// console.log('ya tut')
+// socket = new WebSocket("ws://localhost:8080/chat/username")
+// socket.addEventListener('open', () => {
+//     const post_form = document.querySelector('#createpost_form')
+//     const formData = new FormData(post_form)
+//     socket.send(JSON.stringify({
+//         'title': formData.get('title'),
+//         'description': formData.get('description'),
+//         'category': formData.get('category'),
+//         'token': getCookie('token')
+//     }))
+// })
+// socket.addEventListener('message', event => {
+//     const data = JSON.parse(event.data)
+
+//     if (data.error) {
+//         const newDiv = document.createElement('div').appendChild(document.createTextNode(data.error));
+//         document.body.appendChild(newDiv);
+//         return
+//     }
+//     event.target.href = "/"
+//     route(event)
+// })

@@ -10,6 +10,7 @@ type Storage struct {
 	User
 	Comment
 	Reaction
+	Chat
 }
 
 func NewStorage(db *sql.DB) *Storage {
@@ -19,5 +20,6 @@ func NewStorage(db *sql.DB) *Storage {
 		User:     newUserStorage(db),
 		Comment: newCommentStorage(db),
 		Reaction: newReactionStorage(db),
+		Chat: newChatStorage(db),
 	}
 }
