@@ -70,7 +70,7 @@ func (s *AuthStorage) GetUserByToken(token string) (models.User, error) {
 	var user models.User
 	err := row.Scan(&user.ID, &user.Email, &user.Username, &user.Password)
 	if err != nil {
-		return models.User{}, fmt.Errorf("storage: get user by token: %w", err)
+		return models.User{}, fmt.Errorf("no user")
 	}
 	return user, nil
 }

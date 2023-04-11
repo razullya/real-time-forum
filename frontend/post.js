@@ -50,13 +50,18 @@ function createPostOnMainPage(post) {
     description.className = 'description'
     description.appendChild(document.createTextNode(post.description))
 
-    const category = document.createElement('div')
-    category.className = 'category'
-    category.appendChild(document.createTextNode(post.category))
+    const categories = document.createElement('div')
+    categories.className = 'categories'
+    for (const iterator of post.category) {
+        const category = document.createElement('div')
+        category.className = 'category'
+        category.appendChild(document.createTextNode(iterator))
+        categories.appendChild(category)
+    }
 
     postCont.appendChild(title)
     postCont.appendChild(description)
-    postCont.appendChild(category)
+    postCont.appendChild(categories)
     const posts = document.getElementById('posts')
     posts.appendChild(postCont)
 }
@@ -149,47 +154,50 @@ function createPostOnPage(post) {
     creator.setAttribute('onclick', 'getUser(event)')
     creator.appendChild(document.createTextNode(post.creator))
 
-    const category = document.createElement('div')
-    category.className = 'tags'
+    const categories = document.createElement('div')
+    categories.className = 'categories'
     post.category.forEach(element => {
+        const category = document.createElement('div')
+        category.className = "category"
         category.appendChild(document.createTextNode(element))
+        categories.appendChild(category)
     });
 
-    const like = document.createElement('a')
-    like.className = 'post__like'
-    like.href = '/post/like'
-    like.setAttribute('onclick', 'likePost(event)')
-    like.appendChild(document.createTextNode('LIKE'))
+    // const like = document.createElement('a')
+    // like.className = 'post__like'
+    // like.href = '/post/like'
+    // like.setAttribute('onclick', 'likePost(event)')
+    // like.appendChild(document.createTextNode('LIKE'))
 
-    const dislike = document.createElement('a')
-    dislike.className = 'post__dislike'
-    dislike.href = '/post/dislike'
-    dislike.setAttribute('onclick', 'dislikePost(event)')
-    dislike.appendChild(document.createTextNode('DISLIKE'))
+    // const dislike = document.createElement('a')
+    // dislike.className = 'post__dislike'
+    // dislike.href = '/post/dislike'
+    // dislike.setAttribute('onclick', 'dislikePost(event)')
+    // dislike.appendChild(document.createTextNode('DISLIKE'))
 
-    const count = document.createElement('div')
-    count.className = 'post__count'
+    // const count = document.createElement('div')
+    // count.className = 'post__count'
 
-    const likes = document.createElement('div')
-    likes.id = 'likes'
-    likes.appendChild(document.createTextNode('0'))
+    // const likes = document.createElement('div')
+    // likes.id = 'likes'
+    // likes.appendChild(document.createTextNode('0'))
 
-    const dislikes = document.createElement('div')
-    dislikes.id = 'dislikes'
-    dislikes.appendChild(document.createTextNode('0'))
+    // const dislikes = document.createElement('div')
+    // dislikes.id = 'dislikes'
+    // dislikes.appendChild(document.createTextNode('0'))
 
 
-    count.appendChild(likes)
-    count.appendChild(dislikes)
+    // count.appendChild(likes)
+    // count.appendChild(dislikes)
 
 
     postCont.appendChild(title)
     postCont.appendChild(description)
     postCont.appendChild(creator)
-    postCont.appendChild(category)
-    postCont.appendChild(like)
-    postCont.appendChild(dislike)
-    postCont.appendChild(count)
+    postCont.appendChild(categories)
+    // postCont.appendChild(like)
+    // postCont.appendChild(dislike)
+    // postCont.appendChild(count)
 
     postCont.setAttribute("post_id", post.id)
 }

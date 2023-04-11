@@ -78,7 +78,6 @@ func (p *PostStorage) GetPostsByUsername(username string) ([]models.Post, error)
 		if err := rows.Scan(&post.Id, &post.Creator, &post.Title, &post.Description, &post.Likes, &post.Dislikes, &post.CreatedAt); err != nil {
 			return nil, fmt.Errorf("storage: get all posts by username: %w", err)
 		}
-		fmt.Println(len(posts))
 		posts = append(posts, post)
 	}
 

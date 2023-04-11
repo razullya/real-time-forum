@@ -3,10 +3,11 @@ package delivery
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"forum/internal/service"
 	"forum/models"
 	"net/http"
+	"net/smtp"
+	"strings"
 )
 
 func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
@@ -16,7 +17,7 @@ func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
 		return
 	}
-	
+
 	type SignInRequest struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -28,7 +29,7 @@ func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionToken, err := h.service.Auth.GenerateSessionToken(resp.Username, resp.Password)
+	_, err := h.service.Auth.GenerateSessionToken(resp.Username, resp.Password)
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
 			h.response(w, h.onError(err.Error(), http.StatusBadRequest))
@@ -37,8 +38,51 @@ func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
 		return
 	}
+	from := "eurasian@internet.ru"
+	password := "vJvdasdR6jmkPYcEsNh5"
+	to := "luap11@mail.ru"
+	subject := "OTP"
+	body := "КОД СГЕНЕРИРОВАННЫЙ"
 
-	h.response(w, map[string]string{"token": sessionToken})
+	err = sendMail(from, password, to, subject, body)
+	if err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
+		return
+	}
+
+	h.response(w, statusOK)
+}
+func sendMail(from, password, to, subject, body string) error {
+	smtpHost := "smtp.example.com"
+	smtpPort := "587"
+
+	auth := smtp.PlainAuth("", from, password, smtpHost)
+
+	message := []byte("To: " + to + "\r\n" +
+		"Subject: " + subject + "\r\n" +
+		"\r\n" + body + "\r\n")
+
+	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, strings.Split(to, ","), message)
+	return err
+}
+func (h *Handler) otp(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Headers", "*")
+
+	if r.Method != http.MethodPost {
+		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
+		return
+	}
+	type OTPRequest struct {
+		Code string `json:"code"`
+	}
+
+	var resp OTPRequest
+	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
+	}
+
 }
 
 func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
@@ -67,11 +111,8 @@ func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
 		Username: resp.Username,
 		Password: resp.Password,
 	}
-	
-	fmt.Println(user)
 
 	if err := h.service.Auth.CreateUser(user); err != nil {
-		fmt.Println(err)
 		if errors.Is(err, service.ErrInvalidUserName) ||
 			errors.Is(err, service.ErrInvalidEmail) ||
 			errors.Is(err, service.ErrInvalidPassword) ||
@@ -82,8 +123,6 @@ func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
 		return
 	}
-
-	fmt.Println("no error SignUp")
 
 	h.response(w, statusOK)
 }
@@ -98,7 +137,7 @@ func (h *Handler) logOut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type LogOutRequest struct {
-		Token    string `json:"token"`
+		Token string `json:"token"`
 	}
 
 	var resp LogOutRequest
@@ -134,7 +173,7 @@ func (h *Handler) checkToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.service.CheckToken(resp.Token); err != nil {
+	if err := h.service.Auth.CheckToken(resp.Token); err != nil {
 		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
 		return
 	}

@@ -2,7 +2,6 @@ package delivery
 
 import (
 	"encoding/json"
-	"fmt"
 	"forum/internal/service"
 	"net/http"
 )
@@ -49,17 +48,11 @@ func (h *Handler) InitRoutes() {
 
 	h.Mux.HandleFunc("/profile", h.getUser) //
 	h.Mux.HandleFunc("/chat/check", h.chatCheck)
-	h.Mux.HandleFunc("/chat/create", h.chatCreate)
 
-
-	h.Mux.HandleFunc("/chat", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("2222")
-		upgrader.CheckOrigin = func(r *http.Request) bool { return true }
-		serveWs(w, r)
-	})
+	h.Mux.HandleFunc("/chat/ws", h.chatHandler)
+	h.Mux.HandleFunc("/otp", h.otp)
 
 }
-
 
 func (h *Handler) response(w http.ResponseWriter, data interface{}) {
 	resp, err := json.Marshal(data)

@@ -85,38 +85,6 @@ const createProfileOnPage = (profile) => {
     const main = document.getElementById('main-page')
     main.appendChild(prof)
 }
-
-const startChat = async (event) => {
-    event.preventDefault();
-
-    const urlParams = new URLSearchParams(event.target.search);
-    const username = urlParams.get('username');
-    await fetch('http://localhost:8080/chat/check', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ user: username, token: getCookie('token') })
-    })
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            }
-            throw new Error('Network response was not ok')
-        })
-        .then(async data => {
-
-            console.log(data);
-            if (data) {
-
-                createChatOnPage()
-                
-            } else {
-                console.log(data.Text)
-                route(event)
-            }
-        })
-}
 const createChatOnPage = () => {
     const chat = document.createElement('div');
     chat.className = 'chat'

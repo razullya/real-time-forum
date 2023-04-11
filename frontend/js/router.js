@@ -15,6 +15,7 @@ const routes = {
     '/signin': '/pages/auth/signin.html',
 
     '/profile': '/pages/user/profile.html',
+    // '/chat': '/pages/user/chat.html'
 
 }
 const routesAuth = {
@@ -74,10 +75,17 @@ const handleLocation = async (event) => {
                     return
                 }
                 if (path === '/profile') {
-                    console.log("pro");
+
                     const route = routesAuth[path] || routesAuth[404]
                     const html = await fetch(route).then((data) => data.text());
                     document.getElementById('main-page').innerHTML = ""
+                    return
+                }
+                if (path === '/chat') {
+                    console.log("pro");
+                    const route = routesAuth[path] || routesAuth[404]
+                    const html = await fetch(route).then((data) => data.text());
+                    document.getElementById('main-page').innerHTML = html
                     return
                 }
 

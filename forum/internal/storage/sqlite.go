@@ -51,7 +51,8 @@ const chatTable = `CREATE TABLE IF NOT EXISTS chat (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	first_user TEXT,
 	second_user TEXT,
-	token TEXT
+	first_token TEXT,
+	second_token TEXT
 );`
 
 var tables = []string{userTable, postTable, commentTable, reactionTable, categoriesTable, chatTable}

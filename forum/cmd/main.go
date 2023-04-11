@@ -1,7 +1,5 @@
 package main
 
-
-
 import (
 	"context"
 	"fmt"
@@ -49,8 +47,10 @@ func Run(ctx context.Context) {
 	handlers.InitRoutes()
 
 	server := http.Server{
-		Addr:    ":8080",
-		Handler: handlers.Mux,
+		Addr:         ":8080",
+		Handler:      handlers.Mux,
+		WriteTimeout: 2 * time.Second,
+		ReadTimeout:  2 * time.Second,
 	}
 
 	fmt.Println("Starting server on http://localhost:8080")
@@ -70,4 +70,3 @@ func Run(ctx context.Context) {
 		return
 	}
 }
-

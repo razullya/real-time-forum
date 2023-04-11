@@ -2,16 +2,20 @@
 <html lang="en">
 
 <head>
-    <title>Chat Example</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Chat</title>
 </head>
 
 <body>
-    <div id="log"></div>
-    <form id="form">
-        <input type="text" id="msg" size="64" autofocus />
-        <input type="submit" value="Send" onclick="chatSend(event)" />
-    </form>
+
+    <div id="chat">
+        <div id="messages"></div>
+        <form>
+            <input type="text" id="message" name="message">
+            <button type="submit" onclick="sendMessage(event)">Send</button>
+        </form>
+    </div>
 </body>
 
 </html>

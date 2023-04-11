@@ -1,7 +1,6 @@
 package delivery
 
 import (
-	"fmt"
 	"forum/models"
 	"net/http"
 )
@@ -18,7 +17,6 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
 	token := query.Get("token")
 	var user models.User
 	var err error
-	fmt.Println(token, len(token), "token",query.Get("username"))
 	if token != "" {
 
 		user, err = h.service.Auth.GetUserByToken(token)
@@ -29,7 +27,6 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
 		user.Password = ""
 	} else {
 		username := query.Get("username")
-		fmt.Println("username")
 
 		user, err = h.service.User.GetUserByUsername(username)
 		if err != nil {
@@ -44,8 +41,6 @@ func (h *Handler) getUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-
-	fmt.Println("111",user)
 
 	h.response(w, user)
 }

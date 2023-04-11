@@ -28,6 +28,7 @@ type Auth interface {
 	DeleteSessionToken(token string) error
 	CheckToken(token string) error
 	GetUserByToken(token string) (models.User, error)
+
 }
 
 type AuthService struct {
