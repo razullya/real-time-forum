@@ -10,12 +10,12 @@ const startChat = async (event) => {
         console.log('sorry unauth user')
         return
     }
-    console.log('ya tutaaa')
+
     console.log(tokenChat)
     socket = new WebSocket(`ws://localhost:8080/chat/ws?token=${tokenChat}`);
 
     socket.addEventListener('open', async (event) => {
-        event.target.href = "/chat"
+        event.target.href = `/chat?token=${tokenChat}`
         await route(event)
         console.log('WebSocket connection opened:', event);
     });
@@ -41,7 +41,7 @@ const sendMessage = async (event) => {
     event.preventDefault();
     const message = document.getElementById('message').value;
     var username
-    await fetch('http://localhost:8080/profile?token=' + getCookie('token'), {
+    await fetch('http://localhost:8080/chat?token=' + getCookie('token'), {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json'
@@ -89,8 +89,8 @@ const checkChatToken = async (username) => {
         })
         .then(async data => {
             console.log(data)
-            if (!data.status) {
-                token = data.stoken
+            if (data.token) {
+                token = data.token
                 return
             }
             return null

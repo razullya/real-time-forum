@@ -99,6 +99,7 @@ const onSignInSubmit = async (event) => {
             throw new Error('Network response was not ok')
         })
         .then(async data => {
+            console.log(data)
             if (data.token) {
                 var date = new Date();
                 date.setTime(date.getTime() + (24 * 60 * 60 * 1000));

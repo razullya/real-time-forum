@@ -6,8 +6,6 @@ import (
 	"forum/internal/service"
 	"forum/models"
 	"net/http"
-	"net/smtp"
-	"strings"
 )
 
 func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +27,7 @@ func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err := h.service.Auth.GenerateSessionToken(resp.Username, resp.Password)
+	token, err := h.service.Auth.GenerateSessionToken(resp.Username, resp.Password)
 	if err != nil {
 		if errors.Is(err, service.ErrUserNotFound) {
 			h.response(w, h.onError(err.Error(), http.StatusBadRequest))
@@ -38,33 +36,34 @@ func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
 		return
 	}
-	from := "eurasian@internet.ru"
-	password := "vJvdasdR6jmkPYcEsNh5"
-	to := "luap11@mail.ru"
-	subject := "OTP"
-	body := "КОД СГЕНЕРИРОВАННЫЙ"
+	// from := "eurasian@internet.ru"
+	// password := "vJvdasdR6jmkPYcEsNh5"
+	// to := "luap11@mail.ru"
+	// subject := "OTP"
+	// body := "КОД СГЕНЕРИРОВАННЫЙ"
 
-	err = sendMail(from, password, to, subject, body)
-	if err != nil {
-		h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
-		return
-	}
+	// err = sendMail(from, password, to, subject, body)
+	// if err != nil {
+	// 	h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
+	// 	return
+	// }
 
-	h.response(w, statusOK)
+	h.response(w, map[string]string{"token": token})
 }
-func sendMail(from, password, to, subject, body string) error {
-	smtpHost := "smtp.example.com"
-	smtpPort := "587"
 
-	auth := smtp.PlainAuth("", from, password, smtpHost)
+// func sendMail(from, password, to, subject, body string) error {
+// 	smtpHost := "smtp.example.com"
+// 	smtpPort := "587"
 
-	message := []byte("To: " + to + "\r\n" +
-		"Subject: " + subject + "\r\n" +
-		"\r\n" + body + "\r\n")
+// 	auth := smtp.PlainAuth("", from, password, smtpHost)
 
-	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, strings.Split(to, ","), message)
-	return err
-}
+// 	message := []byte("To: " + to + "\r\n" +
+// 		"Subject: " + subject + "\r\n" +
+// 		"\r\n" + body + "\r\n")
+
+//		err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, strings.Split(to, ","), message)
+//		return err
+//	}
 func (h *Handler) otp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "*")

@@ -47,9 +47,16 @@ func (h *Handler) InitRoutes() {
 	h.Mux.HandleFunc("/comment/dislike", h.dislikeComment) //
 
 	h.Mux.HandleFunc("/profile", h.getUser) //
-	h.Mux.HandleFunc("/chat/check", h.chatCheck)
 
+	h.Mux.HandleFunc("/chat/req", h.chatReq)
+	h.Mux.HandleFunc("/chat/start", h.chatStart)
+
+	// запрос  на начала чата (тут он ждет ответ от другого пользователя)
+	// уведомление имеется в профиле
+	// кнопка начала чата
+	h.Mux.HandleFunc("/notif/all", h.getAllNotif)
 	h.Mux.HandleFunc("/chat/ws", h.chatHandler)
+
 	h.Mux.HandleFunc("/otp", h.otp)
 
 }

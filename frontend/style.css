@@ -8,6 +8,7 @@ html {
     box-sizing: inherit;
     margin: 0;
     padding: 0;
+    color: black;       
 }
 
 a {
@@ -21,7 +22,7 @@ img {
 
 body {
     font-family: 'font', sans-serif;
-    background-color: #10FA0C;
+    background-color: #6fe7f2;
 
     margin: 0;
 }
@@ -44,7 +45,7 @@ body {
 
     margin: 0 auto;
     width: 100%;
-    background-color: #013600;
+    background-color: #0e6976;
     color: #10FA0C;
     flex-wrap: wrap;
 }
@@ -60,7 +61,7 @@ a {
 .container {
     width: 800px;
     margin: 0 auto;
-    background-color: #013600;
+    background-color: #0e6976;
     /* position: fixed; */
 
 }
@@ -68,8 +69,8 @@ a {
 
 
 #main-page {
-    background-color: #087A06;
-    color: #087A06;
+    background-color: #ffffff;
+    color: #157193;
     padding: 10px;
 }
 
@@ -77,19 +78,9 @@ a {
     display: flex;
     justify-content: space-between;
     height: 40px;
-    /* top: 50%; */
-    /* margin-top: -0.625em; */
-    /* margin-bottom: 20px; */
 
 }
 
-/* #main-nav div{
-    padding: auto 0;
-} */
-#main-nav a:first-child {
-    /* margin-right: 15px; */
-
-}
 
 .mainlogo {
 
@@ -121,7 +112,8 @@ a {
 }
 
 .post {
-    background-color: #0CBA09;
+    background-color: #0e6976;
+
     margin: 10px 0;
     padding: 5px;
 }
@@ -138,7 +130,8 @@ a {
 .category {
     margin-right: 5px;
     padding: 2px;
-    background-color: #7ad679;
+    background-color: #2090a2;
+
     border-radius: 2px;
 }
 
@@ -148,7 +141,9 @@ a {
 }
 
 #post-info {
-    background-color: #0CBA09;
+    background-color: #0e6976;
+    color: white;
+
     margin: 10px 0;
     padding: 5px;
 
@@ -156,7 +151,8 @@ a {
 
 input {
     border: none;
-    background-color: #57d955;
+    background-color: #0e6976;
+    color: white;
     height: 20px;
     border-radius: 2px;
 }
@@ -165,7 +161,8 @@ button {
     border: none;
     padding: 2px;
     border-radius: 2px;
-    background-color: #57d955;
+    background-color: #0e6976;
+    color: white;
 }
 
 #createcomment_form {
@@ -173,18 +170,68 @@ button {
 }
 
 #comments {
-    background-color: #0CBA09;
+    background-color: #0e6976;
     margin: 10px 0;
     padding: 5px;
 }
 
 .comment {
-    background-color: #008e00;
+    background-color: #128597;
+
     margin: 10px 0;
+    color: #ffffff;
+
+}
+
+.create_title,
+.create_description,
+.create_category {
     color: #3bd538;
 
 }
-.create_title, .create_description, .create_category{
-    color: #3bd538;
 
+#signin_form {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    text-align: center;
+
+
+}
+
+#signin_form input {
+    margin-bottom: 10px;
+    width: 200px;
+    height: 30px;
+    margin: 0 auto 10px auto;
+}
+
+#signin_form button {
+    margin-bottom: 10px;
+    width: 70px;
+    height: 30px;
+    margin: 0 auto 10px auto;
+}
+
+#signup_form {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    text-align: center;
+
+
+}
+
+#signup_form input {
+    margin-bottom: 10px;
+    width: 200px;
+    height: 30px;
+    margin: 0 auto 10px auto;
+}
+
+#signup_form button {
+    margin-bottom: 10px;
+    width: 70px;
+    height: 30px;
+    margin: 0 auto 10px auto;
 }

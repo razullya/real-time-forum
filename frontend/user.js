@@ -119,3 +119,31 @@ const createChatOnPage = () => {
     const main = document.getElementById('main-page')
     main.appendChild(chat)
 }
+const getAllNotf = async () => {
+
+
+    await fetch('http://localhost:8080/notif/all?token=' + getCookie('token'), {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('Network response was not ok')
+        })
+        .then(async data => {
+
+            console.log(data);
+            if (data) {
+                event.target.href = "/profile"
+                await route(event)
+                createProfileOnPage(data)
+            } else {
+                console.log(data.Text)
+                route(event)
+            }
+        })
+};

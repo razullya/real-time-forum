@@ -163,17 +163,17 @@ function createPostOnPage(post) {
         categories.appendChild(category)
     });
 
-    // const like = document.createElement('a')
-    // like.className = 'post__like'
-    // like.href = '/post/like'
-    // like.setAttribute('onclick', 'likePost(event)')
-    // like.appendChild(document.createTextNode('LIKE'))
+    const like = document.createElement('a')
+    like.className = 'post__like'
+    like.href = '/post/like'
+    like.setAttribute('onclick', 'likePost(event)')
+    like.appendChild(document.createTextNode('LIKE'))
 
-    // const dislike = document.createElement('a')
-    // dislike.className = 'post__dislike'
-    // dislike.href = '/post/dislike'
-    // dislike.setAttribute('onclick', 'dislikePost(event)')
-    // dislike.appendChild(document.createTextNode('DISLIKE'))
+    const dislike = document.createElement('a')
+    dislike.className = 'post__dislike'
+    dislike.href = '/post/dislike'
+    dislike.setAttribute('onclick', 'dislikePost(event)')
+    dislike.appendChild(document.createTextNode('DISLIKE'))
 
     // const count = document.createElement('div')
     // count.className = 'post__count'
@@ -195,8 +195,8 @@ function createPostOnPage(post) {
     postCont.appendChild(description)
     postCont.appendChild(creator)
     postCont.appendChild(categories)
-    // postCont.appendChild(like)
-    // postCont.appendChild(dislike)
+    postCont.appendChild(like)
+    postCont.appendChild(dislike)
     // postCont.appendChild(count)
 
     postCont.setAttribute("post_id", post.id)
