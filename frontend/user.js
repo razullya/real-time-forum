@@ -23,6 +23,7 @@ const getUser = async (event) => {
                 event.target.href = "/profile?username=" + data.username
                 await route(event)
                 createProfileOnPage(data)
+                getAllDialogs()
 
             } else {
                 console.log(data.Text)
@@ -52,6 +53,7 @@ const getYouProfile = async (event) => {
                 event.target.href = "/profile"
                 await route(event)
                 createProfileOnPage(data)
+                getAllDialogs()
             } else {
                 console.log(data.Text)
                 route(event)
@@ -75,7 +77,7 @@ const createProfileOnPage = (profile) => {
     const chat = document.createElement('a')
     chat.className = 'chat'
     chat.href = 'chat?username=' + profile.username
-    chat.setAttribute('onclick', 'startChat(event)')
+    chat.setAttribute('onclick', 'startChatReq(event)')
     chat.appendChild(document.createTextNode('send message'))
 
     prof.appendChild(username)
@@ -119,31 +121,3 @@ const createChatOnPage = () => {
     const main = document.getElementById('main-page')
     main.appendChild(chat)
 }
-const getAllNotf = async () => {
-
-
-    await fetch('http://localhost:8080/notif/all?token=' + getCookie('token'), {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-    })
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            }
-            throw new Error('Network response was not ok')
-        })
-        .then(async data => {
-
-            console.log(data);
-            if (data) {
-                event.target.href = "/profile"
-                await route(event)
-                createProfileOnPage(data)
-            } else {
-                console.log(data.Text)
-                route(event)
-            }
-        })
-};

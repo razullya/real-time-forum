@@ -54,7 +54,8 @@ func (h *Handler) InitRoutes() {
 	// запрос  на начала чата (тут он ждет ответ от другого пользователя)
 	// уведомление имеется в профиле
 	// кнопка начала чата
-	h.Mux.HandleFunc("/notif/all", h.getAllNotif)
+	h.Mux.HandleFunc("/chat/all", h.getAllDialogs)
+
 	h.Mux.HandleFunc("/chat/ws", h.chatHandler)
 
 	h.Mux.HandleFunc("/otp", h.otp)

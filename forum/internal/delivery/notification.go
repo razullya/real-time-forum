@@ -1,8 +1,11 @@
 package delivery
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
-func (h *Handler) getAllNotif(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) getAllDialogs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
 
@@ -16,11 +19,14 @@ func (h *Handler) getAllNotif(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(http.StatusText(http.StatusBadRequest), http.StatusBadRequest))
 		return
 	}
+	fmt.Println(user.Username)
 	notif, err := h.service.Notification.GetNotificationByUsername(user.Username)
 	if err != nil {
+		fmt.Println(err)
 		h.response(w, h.onError(http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError))
 		return
 	}
+	fmt.Println(notif)
 
 	h.response(w, notif)
 }

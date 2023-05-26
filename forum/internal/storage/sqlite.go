@@ -51,7 +51,6 @@ const notifTable = `CREATE TABLE IF NOT EXISTS notification (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	username TEXT,
 	sender TEXT,
-	type_msg INT,
 	msg TEXT,
 	checked BOOLEAN
 );`

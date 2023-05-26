@@ -71,25 +71,6 @@ func (h *Handler) chatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// func (h *Handler) chatCheck(w http.ResponseWriter, r *http.Request) {
-// 	w.Header().Set("Access-Control-Allow-Origin", "*")
-// 	w.Header().Set("Access-Control-Allow-Headers", "*")
-// 	if r.Method != http.MethodPost {
-// 		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
-// 		return
-// 	}
-// 	type ChatCheckRequest struct {
-// 		User  string `json:"username"`
-// 		Token string `json:"token"`
-// 	}
-// 	var req ChatCheckRequest
-// 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-// 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
-// 		return
-// 	}
-
-// }
-
 func (h *Handler) chatReq(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
@@ -113,23 +94,32 @@ func (h *Handler) chatReq(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
 	}
-
-	if err := h.service.Notification.CreateNotification(models.Notification{
-		Username: resp.Username,
-		Sender:   user.Username,
-		Type:     0,
-		Message:  "",
-		Checked:  false,
-	}); err != nil {
-		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
-		return
-	}
 	token, err := h.service.Chat.GenerateToken()
 	if err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
 	}
+	token2, err := h.service.Chat.GenerateToken()
+	if err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
+	}
+	if resp.Username == user.Username {
+		h.response(w, h.onError("it u", http.StatusBadRequest))
+		return
+	}
+	if err := h.service.Notification.CreateNotification(models.Notification{
+		Username: resp.Username,
+		Sender:   user.Username,
+		Message:  token2,
+		Checked:  false,
+	}); err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
+	}
+
 	users[resp.Username] = token
+	fmt.Println("token req ", token)
 	h.response(w, map[string]string{"token": token})
 }
 
@@ -150,12 +140,22 @@ func (h *Handler) chatStart(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	token, err := h.service.Chat.GenerateToken()
+
+	user, err := h.service.Auth.GetUserByToken(resp.Token)
 	if err != nil {
 		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
 		return
 	}
-	users[resp.Username] = token
+	fmt.Println(user.Username, resp.Username)
+	notif, err := h.service.Notification.GetTokenChat(user.Username, resp.Username)
+	if err != nil {
+		fmt.Println(err)
+		h.response(w, h.onError(err.Error(), http.StatusBadRequest))
+		return
+	}
 
-	h.response(w, map[string]string{"token": token})
+	users[resp.Username] = notif.Message
+	fmt.Println("token start ", notif.Message)
+
+	h.response(w, map[string]string{"token": notif.Message})
 }

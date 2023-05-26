@@ -1,9 +1,6 @@
 package service
 
-import (
-	"crypto/rand"
-	"encoding/base64"
-)
+import "github.com/google/uuid"
 
 type Chat interface {
 	GenerateToken() (string, error)
@@ -18,11 +15,6 @@ func newChatService() *ChatService {
 
 func (c *ChatService) GenerateToken() (string, error) {
 
-	bytes := make([]byte, 32)
-	_, err := rand.Read(bytes)
-	if err != nil {
-		return "", err
-	}
-	return base64.URLEncoding.EncodeToString(bytes), nil
+	return uuid.NewString(), nil
 
 }
