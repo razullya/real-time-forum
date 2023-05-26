@@ -27,43 +27,15 @@ func (h *Handler) signIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := h.service.Auth.GenerateSessionToken(resp.Username, resp.Password)
+	email, err := h.service.Auth.SignIn(resp.Username, resp.Password)
 	if err != nil {
-		if errors.Is(err, service.ErrUserNotFound) {
-			h.response(w, h.onError(err.Error(), http.StatusBadRequest))
-			return
-		}
 		h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
 		return
 	}
-	// from := "eurasian@internet.ru"
-	// password := "vJvdasdR6jmkPYcEsNh5"
-	// to := "luap11@mail.ru"
-	// subject := "OTP"
-	// body := "КОД СГЕНЕРИРОВАННЫЙ"
 
-	// err = sendMail(from, password, to, subject, body)
-	// if err != nil {
-	// 	h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
-	// 	return
-	// }
-
-	h.response(w, map[string]string{"token": token})
+	h.response(w, map[string]string{"email": email})
 }
 
-// func sendMail(from, password, to, subject, body string) error {
-// 	smtpHost := "smtp.example.com"
-// 	smtpPort := "587"
-
-// 	auth := smtp.PlainAuth("", from, password, smtpHost)
-
-// 	message := []byte("To: " + to + "\r\n" +
-// 		"Subject: " + subject + "\r\n" +
-// 		"\r\n" + body + "\r\n")
-
-//		err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, strings.Split(to, ","), message)
-//		return err
-//	}
 func (h *Handler) otp(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "*")
@@ -72,8 +44,10 @@ func (h *Handler) otp(w http.ResponseWriter, r *http.Request) {
 		h.response(w, h.onError(http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed))
 		return
 	}
+
 	type OTPRequest struct {
-		Code string `json:"code"`
+		Username string `json:"username"`
+		Code     string `json:"code"`
 	}
 
 	var resp OTPRequest
@@ -82,6 +56,13 @@ func (h *Handler) otp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	token, err := h.service.Auth.ApproveOtpCode(resp.Username, resp.Code)
+	if err != nil {
+		h.response(w, h.onError(err.Error(), http.StatusInternalServerError))
+		return
+	}
+
+	h.response(w, map[string]string{"token": token})
 }
 
 func (h *Handler) signUp(w http.ResponseWriter, r *http.Request) {
