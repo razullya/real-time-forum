@@ -6,7 +6,12 @@ import (
 	"fmt"
 	"forum/internal/storage"
 	"forum/models"
+	"math/rand"
+	"net/smtp"
+	"os"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -19,26 +24,109 @@ var (
 	ErrInvalidPassword   = errors.New("invalid password")
 	ErrPasswordDontMatch = errors.New("password didn't match")
 	ErrUserExist         = errors.New("user exist")
+	ErrOtpCodeNotExists  = errors.New("otp code not exists")
+	ErrInvlidOtpCode     = errors.New("invalid otp code")
 )
 
 type Auth interface {
 	CreateUser(user models.User) error
-	GenerateSessionToken(login, password string) (string, error)
+	GenerateSessionToken(login string) (string, error)
+	SignIn(login, password string) (string, error)
+	ApproveOtpCode(login, code string) (string, error)
 	ParseSessionToken(token string) (models.User, error)
 	DeleteSessionToken(token string) error
 	CheckToken(token string) error
 	GetUserByToken(token string) (models.User, error)
-
 }
 
 type AuthService struct {
 	storage storage.Auth
+	cache   map[string]string
 }
 
 func newAuthService(storage storage.Auth) *AuthService {
 	return &AuthService{
 		storage: storage,
+		cache:   make(map[string]string),
 	}
+}
+
+func (s *AuthService) SignIn(login, password string) (string, error) {
+	user, err := s.storage.GetUserByLogin(login)
+	if err != nil {
+		return "", fmt.Errorf("service: sign in: %w", err)
+	}
+
+	if err := compareHashAndPassword(user.Password, password); err != nil {
+		return "", fmt.Errorf("service: sign in: %w", err)
+	}
+
+	err = s.sendOtp(user)
+	if err != nil {
+		return "", fmt.Errorf("service: sign in: %w", err)
+	}
+
+	return user.Email, nil
+}
+
+func (s *AuthService) sendOtp(user models.User) error {
+	senderEmail := os.Getenv("OTP_SENDER_EMAIL")
+	senderPassword := os.Getenv("OTP_SENDER_PASSWORD")
+
+	recieverEmail := user.Email
+
+	max := 10000
+	min := 1000
+
+	randonOtpCode := strconv.Itoa(rand.Intn(max-min) + min)
+
+	subject := "OTP"
+	body := randonOtpCode
+
+	smtpHost := "smtp.gmail.com"
+	smtpPort := "587"
+
+	auth := smtp.PlainAuth("", senderEmail, senderPassword, smtpHost)
+
+	message := []byte("To: " + recieverEmail + "\r\n" + "Subject: " + subject + "\r\n\r\n" + body + "\r\n")
+
+	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, senderEmail, strings.Split(recieverEmail, ","), message)
+	if err != nil {
+		return fmt.Errorf("service: sendOtp: %w", err)
+	}
+
+	s.cache[user.Username] = randonOtpCode
+
+	return nil
+}
+
+func (s *AuthService) ApproveOtpCode(login, code string) (string, error) {
+	user, err := s.storage.GetUserByLogin(login)
+	if err != nil {
+		return "", fmt.Errorf("service: approve otp code: %w", err)
+	}
+
+	originOtpCode, ok := s.cache[user.Username]
+	if !ok {
+		return "", fmt.Errorf("service: approve otp code: %w", ErrOtpCodeNotExists)
+	}
+
+	if originOtpCode != code {
+		if err := s.sendOtp(user); err != nil {
+			return "", fmt.Errorf("service: approve otp code: %w", err)
+		}
+
+		return "", fmt.Errorf("service: approve otp code: %w: sending new otp", ErrInvlidOtpCode)
+	}
+
+	token, err := s.GenerateSessionToken(user.Username)
+	if err != nil {
+		return "", fmt.Errorf("service: approve otp code: %w", err)
+	}
+
+	delete(s.cache, user.Username)
+
+	return token, nil
 }
 
 func (s *AuthService) CreateUser(user models.User) error {
@@ -60,7 +148,7 @@ func (s *AuthService) CreateUser(user models.User) error {
 	return s.storage.CreateUser(user)
 }
 
-func (s *AuthService) GenerateSessionToken(username, password string) (string, error) {
+func (s *AuthService) GenerateSessionToken(username string) (string, error) {
 	user, err := s.storage.GetUserByLogin(username)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -68,9 +156,7 @@ func (s *AuthService) GenerateSessionToken(username, password string) (string, e
 		}
 		return "", fmt.Errorf("service: generate session token: %w", err)
 	}
-	if err := compareHashAndPassword(user.Password, password); err != nil {
-		return "", fmt.Errorf("service: generate session token: %w", err)
-	}
+
 	token := uuid.NewString()
 
 	if err := s.storage.SaveSessionToken(user.Username, token); err != nil {
