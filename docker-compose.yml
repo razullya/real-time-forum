@@ -1,16 +1,16 @@
 version: "3.8"
 
 services:
-  frontend:
-    container_name: forum-frontend
-    build:
-      context: ./frontend/
-      dockerfile: Dockerfile
-    environment:
-      - API_PORT=8080
-      - API_HOST=127.0.0.1
-    ports:
-      - "3000:3000"
+  # frontend:
+  #   container_name: forum-frontend
+  #   build:
+  #     context: ./frontend/
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     - API_PORT=8080
+  #     - API_HOST=127.0.0.1
+  #   ports:
+  #     - "3000:3000"
 
   backend:
     container_name: forum-backend

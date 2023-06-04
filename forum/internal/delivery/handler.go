@@ -3,6 +3,7 @@ package delivery
 import (
 	"encoding/json"
 	"forum/internal/service"
+	"log"
 	"net/http"
 )
 
@@ -27,6 +28,20 @@ func NewHandler(services *service.Service) *Handler {
 }
 
 func (h *Handler) InitRoutes() {
+	log.Println("init routes")
+
+	// router := gin.Default()
+
+	// router.GET("/", func(ctx *gin.Context) {
+	// 	ctx.Redirect(http.StatusSeeOther, "/web")
+	// })
+
+	// router.Use(cors.New(cors.Config{
+	// 	AllowOrigins: []string{"*"},
+	// 	AllowMethods: []string{"*"},
+	// 	AllowHeaders: []string{"*"},
+	// }))
+
 	h.Mux.HandleFunc("/signin", h.signIn)
 	h.Mux.HandleFunc("/signup", h.signUp)
 
